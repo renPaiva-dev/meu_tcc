@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Entrar')}"></head>
+<body class="d-flex align-items-center min-vh-100">
+<main class="container" style="max-width: 400px">
+    <h1 class="h3 mb-1 text-success">Recicla<strong>THE</strong></h1>
+    <p class="text-muted mb-4">Painel administrativo</p>
+    <div th:if="${param.error}" class="alert alert-danger">E-mail ou senha inválidos.</div>
+    <div th:if="${param.saiu}" class="alert alert-info">Você saiu do painel.</div>
+    <form th:action="@{/login}" method="post" class="card card-body shadow-sm">
+        <label class="form-label" for="username">E-mail</label>
+        <input class="form-control mb-3" type="email" id="username" name="username" required autofocus>
+        <label class="form-label" for="password">Senha</label>
+        <input class="form-control mb-4" type="password" id="password" name="password" required>
+        <button class="btn btn-success w-100" type="submit">Entrar</button>
+    </form>
+</main>
+</body>
+</html>

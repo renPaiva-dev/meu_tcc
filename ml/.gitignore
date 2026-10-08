@@ -1,0 +1,17 @@
+# ambiente e dados (não versionar)
+.venv/
+dados/
+__pycache__/
+*.pyc
+
+# artefatos grandes
+modelo/checkpoints/
+*.pt
+*.pth
+*.zip
+*.parcial
+# Os modelos ONNX (~4-17 MB) são ignorados por padrão; remova as linhas abaixo
+# se quiser versioná-los junto do código (ou use Git LFS / release).
+modelo/*.onnx
+
+# mantidos: resultados/*.json, resultados/*.png, resultados/*.md, modelo/labels.json, *.md

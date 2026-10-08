@@ -1,0 +1,12 @@
+# Ambiente do pipeline de ML do ReciclaTHE (Python 3.12).
+# torch/torchvision do PyPI já vêm com suporte a CUDA no Linux (testado: CUDA 13.0, RTX 3050 6GB).
+torch==2.14.1
+torchvision==0.29.1
+onnx==1.23.2
+onnxruntime==1.30.0
+onnxscript==0.7.2
+scikit-learn==1.9.1
+matplotlib==3.11.2
+huggingface-hub==2.1.1
+pillow==12.3.0
+numpy==2.5.3

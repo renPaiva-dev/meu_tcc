@@ -1,0 +1,6 @@
+# Perfil de desenvolvimento/demonstração. NÃO use em produção.
+reciclathe:
+  jwt:
+    segredo: segredo-de-desenvolvimento-nao-usar-em-producao
+  admin:
+    senha: admin123

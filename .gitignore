@@ -1,0 +1,7 @@
+# Java / Maven
+api/target/
+api/dados/
+# IDEs
+.idea/
+.vscode/
+*.iml

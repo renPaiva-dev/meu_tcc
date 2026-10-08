@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Zonas')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: menu('zonas')}"></nav>
+<main class="container pb-5" style="max-width: 900px">
+    <h1 class="h3 mb-3">Zonas da coleta seletiva</h1>
+    <div th:replace="~{fragmentos :: alertas}"></div>
+
+    <div class="card mb-4">
+        <div class="card-body table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Zona</th><th>Bairros importados</th><th>Telefone (Disk Coleta)</th></tr></thead>
+                <tbody>
+                <tr th:each="z : ${zonas}">
+                    <td th:text="${z.nome}"></td>
+                    <td th:text="${bairros.getOrDefault(z.codigo, 0)}"></td>
+                    <td>
+                        <form th:action="@{/admin/zonas/{c}(c=${z.codigo})}" method="post" class="d-flex gap-2">
+                            <input class="form-control form-control-sm" name="telefone" th:value="${z.telefoneColeta}">
+                            <button class="btn btn-sm btn-outline-success">Salvar</button>
+                        </form>
+                        <div class="small text-muted mt-1" th:if="${z.fonte}" th:text="'Fonte: ' + ${z.fonte}"></div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Importar bairros (GeoJSON)</div>
+        <div class="card-body">
+            <p class="small text-muted">Com os bairros importados, o app descobre a zona do usuário pela localização.
+                Use um <code>FeatureCollection</code> em WGS84 (EPSG:4326), por exemplo a malha de bairros publicada pelo IBGE
+                ou pela prefeitura, com uma propriedade para o nome do bairro e outra para a zona.
+                Bairros com o mesmo nome são atualizados.</p>
+            <form th:action="@{/admin/zonas/importar}" method="post" enctype="multipart/form-data" class="row g-2">
+                <div class="col-md-6"><input class="form-control" type="file" name="arquivo" accept=".geojson,.json,application/geo+json" required></div>
+                <div class="col-md-2"><input class="form-control" name="propriedadeNome" value="nome" title="Propriedade com o nome" required></div>
+                <div class="col-md-2"><input class="form-control" name="propriedadeZona" value="zona" title="Propriedade com a zona" required></div>
+                <div class="col-md-2"><button class="btn btn-success w-100">Importar</button></div>
+            </form>
+        </div>
+    </div>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

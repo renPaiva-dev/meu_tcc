@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Painel')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: menu('painel')}"></nav>
+<main class="container pb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h1 class="h3 mb-0">Painel de Teresina</h1>
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label for="dias" class="text-muted small">Período</label>
+            <select id="dias" name="dias" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option th:each="d : ${ {7, 30, 90, 365} }" th:value="${d}" th:text="'Últimos ' + ${d} + ' dias'"
+                        th:selected="${d == dias}"></option>
+            </select>
+        </form>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="card card-body card-indicador">
+            <span class="text-muted small">Cidadãos cadastrados</span><span class="valor" th:text="${resumo.usuarios()}">0</span></div></div>
+        <div class="col-6 col-lg-3"><div class="card card-body card-indicador">
+            <span class="text-muted small">Identificações no período</span><span class="valor" th:text="${resumo.identificacoes()}">0</span></div></div>
+        <div class="col-6 col-lg-3"><div class="card card-body card-indicador">
+            <span class="text-muted small">Pontos no mapa</span><span class="valor" th:text="${resumo.pontosAprovados()}">0</span></div></div>
+        <div class="col-6 col-lg-3"><a class="card card-body card-indicador text-decoration-none" th:href="@{/admin/pontos(status=PENDENTE)}">
+            <span class="text-muted small">Sugestões pendentes</span>
+            <span class="valor" th:classappend="${resumo.sugestoesPendentes() > 0} ? text-warning" th:text="${resumo.sugestoesPendentes()}">0</span></a></div>
+    </div>
+
+    <section class="card mb-4">
+        <div class="card-header">O que os moradores tentam descartar, por zona</div>
+        <div class="card-body table-responsive">
+            <table class="table table-sm tabela-matriz mb-0">
+                <thead><tr>
+                    <th>Zona</th>
+                    <th th:each="m : ${materiais}"><span class="cor-material" th:style="'background:' + ${m.corHex}"></span><span th:text="${m.nome}"></span></th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="z : ${zonas}">
+                    <td th:text="${z.nome}"></td>
+                    <td th:each="m : ${materiais}" th:text="${matriz.get(z.codigo)?.get(m.codigo) ?: 0}"></td>
+                </tr>
+                <tr th:if="${semZona}" class="text-muted">
+                    <td>Sem zona informada</td>
+                    <td th:each="m : ${materiais}" th:text="${matriz.get('SEM_ZONA')?.get(m.codigo) ?: 0}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <p class="small text-muted mt-2 mb-0">Dados anônimos e agregados. Quando o usuário corrige a classificação, conta o material corrigido.</p>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header">Acurácia do modelo em uso real (segundo o feedback dos usuários)</div>
+        <div class="card-body table-responsive">
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Material previsto</th><th>Com feedback</th><th>Corretas</th><th>Acurácia</th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${acuracia}">
+                    <td th:text="${a.nome()}"></td>
+                    <td th:text="${a.avaliadas()}"></td>
+                    <td th:text="${a.corretas()}"></td>
+                    <td th:text="${a.percentual() == null} ? '—' : ${#numbers.formatDecimal(a.percentual(), 1, 1, 'COMMA')} + '%'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

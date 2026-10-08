@@ -1,0 +1,8 @@
+reciclathe:
+  jwt:
+    segredo: segredo-de-teste-com-mais-de-32-caracteres
+  fotos:
+    diretorio: ${java.io.tmpdir}/reciclathe-teste-fotos
+  admin:
+    email: admin@teste.local
+    senha: admin-teste

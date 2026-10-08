@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Erros do modelo')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: menu('erros')}"></nav>
+<main class="container pb-5">
+    <h1 class="h3 mb-1">Erros do modelo apontados pelos usuários</h1>
+    <p class="text-muted">Fotos só aparecem quando o usuário consentiu em compartilhá-las. Material para o próximo retreino.</p>
+    <p th:if="${erros.isEmpty()}" class="text-muted">Nenhuma correção recebida ainda.</p>
+    <div class="table-responsive" th:unless="${erros.isEmpty()}">
+        <table class="table align-middle bg-white">
+            <thead><tr><th>Foto</th><th>Modelo disse</th><th>Usuário corrigiu para</th><th>Confiança</th><th>Versão do modelo</th><th>Quando</th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${erros}">
+                <td><img th:if="${i.fotoArquivo}" class="foto-miniatura" th:src="@{/admin/erros-modelo/{id}/foto(id=${i.id})}" alt="Foto"><span th:unless="${i.fotoArquivo}" class="text-muted small">sem foto</span></td>
+                <td th:text="${i.materialPrevisto.nome}"></td>
+                <td class="fw-semibold" th:text="${i.materialCorrigido.nome}"></td>
+                <td th:text="${#numbers.formatPercent(i.confianca, 1, 0)}"></td>
+                <td class="small" th:text="${i.versaoModelo} ?: '—'"></td>
+                <td class="small" th:text="${#temporals.format(i.feedbackEm, 'dd/MM/yyyy HH:mm', 'America/Fortaleza')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

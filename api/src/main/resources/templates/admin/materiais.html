@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Orientações de descarte')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: menu('materiais')}"></nav>
+<main class="container pb-5">
+    <h1 class="h3 mb-1">Orientações de descarte</h1>
+    <p class="text-muted">O app baixa estas orientações e as mostra offline. Alterações chegam na próxima sincronização.</p>
+    <div th:replace="~{fragmentos :: alertas}"></div>
+    <div class="row g-3">
+        <div class="col-md-6" th:each="m : ${materiais}">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><span class="cor-material" th:style="'background:' + ${m.corHex}"></span><strong th:text="${m.nome}"></strong>
+                        <span class="badge text-bg-light" th:text="${m.reciclavel} ? 'reciclável' : 'não reciclável'"></span></span>
+                    <a class="btn btn-sm btn-outline-success" th:href="@{/admin/materiais/{c}(c=${m.codigo})}">Editar</a>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Como preparar:</strong> <span th:text="${m.comoPreparar}"></span></p>
+                    <p><strong>Onde descartar:</strong> <span th:text="${m.ondeDescartar}"></span></p>
+                    <p th:if="${m.observacoes}"><strong>Atenção:</strong> <span th:text="${m.observacoes}"></span></p>
+                    <p class="text-muted mb-0">Fonte: <span th:text="${m.fonte}"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

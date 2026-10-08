@@ -1,0 +1,38 @@
+{
+  "versao": "mobilenetv3-v1",
+  "classes": [
+    "PLASTICO",
+    "PAPEL",
+    "METAL",
+    "VIDRO",
+    "ELETRONICO",
+    "ORGANICO",
+    "REJEITO"
+  ],
+  "entrada": {
+    "tamanho": 224,
+    "media": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "desvio": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "layout": "NCHW",
+    "escala": "pixel/255",
+    "redimensionamento": "direto para 224x224 (sem recorte), RGB",
+    "nome_tensor": "input",
+    "dtype": "float32"
+  },
+  "saida": {
+    "nome_tensor": "logits",
+    "forma": [
+      1,
+      7
+    ],
+    "observacao": "aplicar softmax"
+  }
+}

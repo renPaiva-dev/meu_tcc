@@ -1,0 +1,213 @@
+{
+  "candidatos": 12116,
+  "processados": 12116,
+  "erros": 0,
+  "descartados_orientacao": 0,
+  "duplicatas": {
+    "trashnet": 15,
+    "realwaste": 8,
+    "taco": 1,
+    "giz_ewaste": 1
+  },
+  "duplicatas_rotulo_conflitante": 5,
+  "finais": 12091,
+  "distribuicao": {
+    "trashnet": {
+      "teste": {
+        "PAPEL": 148,
+        "VIDRO": 75,
+        "METAL": 62,
+        "PLASTICO": 72,
+        "REJEITO": 21
+      },
+      "val": {
+        "PAPEL": 149,
+        "VIDRO": 75,
+        "METAL": 61,
+        "PLASTICO": 72,
+        "REJEITO": 21
+      },
+      "treino": {
+        "PAPEL": 689,
+        "VIDRO": 351,
+        "METAL": 286,
+        "PLASTICO": 335,
+        "REJEITO": 95
+      }
+    },
+    "TOTAL": {
+      "teste": {
+        "PAPEL": 341,
+        "VIDRO": 160,
+        "METAL": 249,
+        "PLASTICO": 488,
+        "REJEITO": 183,
+        "ORGANICO": 129,
+        "ELETRONICO": 270
+      },
+      "val": {
+        "PAPEL": 345,
+        "VIDRO": 159,
+        "METAL": 245,
+        "PLASTICO": 487,
+        "REJEITO": 183,
+        "ORGANICO": 130,
+        "ELETRONICO": 260
+      },
+      "treino": {
+        "PAPEL": 1592,
+        "VIDRO": 769,
+        "METAL": 1147,
+        "PLASTICO": 2274,
+        "REJEITO": 852,
+        "ORGANICO": 594,
+        "ELETRONICO": 1234
+      }
+    },
+    "realwaste": {
+      "treino": {
+        "PAPEL": 672,
+        "VIDRO": 293,
+        "METAL": 549,
+        "PLASTICO": 644,
+        "ORGANICO": 591,
+        "REJEITO": 569
+      },
+      "val": {
+        "PAPEL": 145,
+        "VIDRO": 63,
+        "METAL": 117,
+        "PLASTICO": 138,
+        "ORGANICO": 128,
+        "REJEITO": 121
+      },
+      "teste": {
+        "PAPEL": 144,
+        "VIDRO": 63,
+        "METAL": 120,
+        "PLASTICO": 138,
+        "ORGANICO": 127,
+        "REJEITO": 122
+      }
+    },
+    "taco": {
+      "treino": {
+        "VIDRO": 125,
+        "PAPEL": 231,
+        "PLASTICO": 1295,
+        "METAL": 312,
+        "REJEITO": 188,
+        "ORGANICO": 3,
+        "ELETRONICO": 1
+      },
+      "val": {
+        "PLASTICO": 277,
+        "VIDRO": 21,
+        "METAL": 67,
+        "PAPEL": 51,
+        "REJEITO": 41,
+        "ORGANICO": 2
+      },
+      "teste": {
+        "METAL": 67,
+        "PAPEL": 49,
+        "REJEITO": 40,
+        "PLASTICO": 278,
+        "VIDRO": 22,
+        "ORGANICO": 2,
+        "ELETRONICO": 1
+      }
+    },
+    "giz_ewaste": {
+      "treino": {
+        "ELETRONICO": 1233
+      },
+      "teste": {
+        "ELETRONICO": 269
+      },
+      "val": {
+        "ELETRONICO": 260
+      }
+    }
+  },
+  "origem_por_classe": {
+    "trashnet": {
+      "cardboard->PAPEL": 401,
+      "paper->PAPEL": 585,
+      "glass->VIDRO": 501,
+      "metal->METAL": 409,
+      "plastic->PLASTICO": 479,
+      "trash->REJEITO": 137
+    },
+    "realwaste": {
+      "Cardboard->PAPEL": 461,
+      "Paper->PAPEL": 500,
+      "Glass->VIDRO": 419,
+      "Metal->METAL": 786,
+      "Plastic->PLASTICO": 920,
+      "Food Organics->ORGANICO": 410,
+      "Vegetation->ORGANICO": 436,
+      "Miscellaneous Trash->REJEITO": 494,
+      "Textile Trash->REJEITO": 318
+    },
+    "taco": {
+      "Glass bottle->VIDRO": 101,
+      "Meal carton->PAPEL": 30,
+      "Other carton->PAPEL": 91,
+      "Clear plastic bottle->PLASTICO": 273,
+      "Drink can->METAL": 215,
+      "Food Can->METAL": 34,
+      "Other plastic bottle->PLASTICO": 49,
+      "Plastic bottle cap->PLASTICO": 145,
+      "Pop tab->METAL": 53,
+      "Glass cup->VIDRO": 6,
+      "Plastic film->PLASTICO": 442,
+      "Other plastic->PLASTICO": 211,
+      "Metal bottle cap->METAL": 57,
+      "Disposable food container->PLASTICO": 37,
+      "Normal paper->PAPEL": 78,
+      "Other plastic wrapper->PLASTICO": 246,
+      "Single-use carrier bag->PLASTICO": 60,
+      "Tissues->REJEITO": 39,
+      "Crisp packet->REJEITO": 39,
+      "Plastic lid->PLASTICO": 71,
+      "Metal lid->METAL": 10,
+      "Egg carton->PAPEL": 10,
+      "Plastic straw->PLASTICO": 121,
+      "Paper bag->PAPEL": 27,
+      "Disposable plastic cup->PLASTICO": 103,
+      "Broken glass->VIDRO": 55,
+      "Plastic utensils->PLASTICO": 33,
+      "Glass jar->VIDRO": 6,
+      "Food waste->ORGANICO": 7,
+      "Spread tub->PLASTICO": 9,
+      "Shoe->REJEITO": 7,
+      "Garbage bag->PLASTICO": 31,
+      "Aluminium foil->METAL": 60,
+      "Six pack rings->PLASTICO": 5,
+      "Corrugated carton->PAPEL": 64,
+      "Battery->ELETRONICO": 2,
+      "Toilet tube->PAPEL": 4,
+      "Rope & strings->REJEITO": 27,
+      "Cigarette->REJEITO": 153,
+      "Other plastic container->PLASTICO": 5,
+      "Polypropylene bag->PLASTICO": 3,
+      "Scrap metal->METAL": 17,
+      "Magazine paper->PAPEL": 12,
+      "Pizza box->PAPEL": 3,
+      "Plastic glooves->REJEITO": 4,
+      "Wrapping paper->PAPEL": 12,
+      "Tupperware->PLASTICO": 4,
+      "Other plastic cup->PLASTICO": 2
+    },
+    "giz_ewaste": {
+      "Computers->ELETRONICO": 311,
+      "Laptops->ELETRONICO": 255,
+      "Microwave->ELETRONICO": 225,
+      "Compressors->ELETRONICO": 245,
+      "Fridges->ELETRONICO": 209,
+      "TV->ELETRONICO": 257,
+      "ACs->ELETRONICO": 260
+    }
+  }
+}

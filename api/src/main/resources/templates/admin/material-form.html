@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Editar orientação')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: menu('materiais')}"></nav>
+<main class="container pb-5" style="max-width: 800px">
+    <h1 class="h3 mb-3"><span class="cor-material" th:style="'background:' + ${material.corHex}"></span><span th:text="${material.nome}"></span></h1>
+    <div th:if="${erros}" class="alert alert-danger">
+        <ul class="mb-0"><li th:each="e : ${erros}" th:text="${e}"></li></ul>
+    </div>
+    <form th:action="@{/admin/materiais/{c}(c=${material.codigo})}" method="post" class="card card-body">
+        <label class="form-label" for="comoPreparar">Como preparar</label>
+        <textarea class="form-control mb-3" rows="3" id="comoPreparar" name="comoPreparar" required th:text="${orientacao.comoPreparar()}"></textarea>
+        <label class="form-label" for="ondeDescartar">Onde descartar</label>
+        <textarea class="form-control mb-3" rows="3" id="ondeDescartar" name="ondeDescartar" required th:text="${orientacao.ondeDescartar()}"></textarea>
+        <label class="form-label" for="observacoes">Atenção / observações</label>
+        <textarea class="form-control mb-3" rows="3" id="observacoes" name="observacoes" th:text="${orientacao.observacoes()}"></textarea>
+        <label class="form-label" for="fonte">Fonte</label>
+        <input class="form-control mb-4" id="fonte" name="fonte" required th:value="${orientacao.fonte()}">
+        <div class="d-flex justify-content-between">
+            <a class="btn btn-outline-secondary" th:href="@{/admin/materiais}">Voltar</a>
+            <button class="btn btn-success" type="submit">Salvar</button>
+        </div>
+    </form>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

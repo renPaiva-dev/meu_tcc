@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "ReciclaTHE",
+    "slug": "reciclathe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "reciclathe",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.reciclathe.app"
+    },
+    "android": {
+      "package": "br.com.reciclathe.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E8F5E9",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "@maplibre/maplibre-react-native",
+      "onnxruntime-react-native",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O ReciclaTHE usa suas fotos para identificar o tipo de resíduo no próprio aparelho.",
+          "cameraPermission": "O ReciclaTHE usa a câmera para fotografar o resíduo e identificá-lo no próprio aparelho.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O ReciclaTHE usa sua localização para mostrar pontos de coleta próximos e confirmar check-ins. A coordenada não é armazenada no seu perfil."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      "expo-font"
+    ]
+  }
+}

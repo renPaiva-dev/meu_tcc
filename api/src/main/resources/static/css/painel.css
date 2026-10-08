@@ -1,0 +1,9 @@
+:root { --verde: #2e7d32; }
+body { background: #f5f7f5; }
+.navbar-brand strong { color: #a5d6a7; }
+.card-indicador .valor { font-size: 2rem; font-weight: 600; }
+.cor-material { display: inline-block; width: .85rem; height: .85rem; border-radius: 50%; vertical-align: middle; margin-right: .35rem; }
+#mapa { height: 360px; border-radius: .5rem; }
+.foto-miniatura { max-width: 96px; max-height: 96px; object-fit: cover; border-radius: .25rem; }
+.tabela-matriz td, .tabela-matriz th { text-align: center; }
+.tabela-matriz td:first-child, .tabela-matriz th:first-child { text-align: left; }

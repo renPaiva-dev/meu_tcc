@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Pontos de coleta')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: menu('pontos')}"></nav>
+<main class="container pb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h1 class="h3 mb-0">Pontos de coleta</h1>
+        <div class="d-flex gap-2">
+            <form th:action="@{/admin/pontos/importar-osm}" method="post"
+                  onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'Importando…'">
+                <button class="btn btn-outline-success" type="submit"
+                        title="Busca contêineres de recicláveis, centros de reciclagem e estações de resíduos de Teresina no OpenStreetMap">
+                    Importar do OpenStreetMap</button>
+            </form>
+            <a class="btn btn-success" th:href="@{/admin/pontos/novo}">Novo ponto</a>
+        </div>
+    </div>
+    <div th:replace="~{fragmentos :: alertas}"></div>
+
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item"><a class="nav-link" th:classappend="${status == null} ? active" th:href="@{/admin/pontos}">Todos</a></li>
+        <li class="nav-item"><a class="nav-link" th:classappend="${status?.name() == 'PENDENTE'} ? active" th:href="@{/admin/pontos(status=PENDENTE)}">
+            Pendentes <span class="badge text-bg-warning" th:if="${pendentes > 0}" th:text="${pendentes}"></span></a></li>
+        <li class="nav-item"><a class="nav-link" th:classappend="${status?.name() == 'APROVADO'} ? active" th:href="@{/admin/pontos(status=APROVADO)}">Aprovados</a></li>
+        <li class="nav-item"><a class="nav-link" th:classappend="${status?.name() == 'RECUSADO'} ? active" th:href="@{/admin/pontos(status=RECUSADO)}">Recusados</a></li>
+    </ul>
+
+    <p th:if="${pontos.isEmpty()}" class="text-muted">Nenhum ponto nesta lista.</p>
+    <p class="small text-muted">Dados importados do OpenStreetMap: © colaboradores do OpenStreetMap, licença
+        <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener">ODbL</a>.</p>
+    <div class="table-responsive" th:unless="${pontos.isEmpty()}">
+        <table class="table align-middle bg-white">
+            <thead><tr><th>Ponto</th><th>Materiais</th><th>Origem</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="p : ${pontos}">
+                <td>
+                    <a th:href="@{/admin/pontos/{id}(id=${p.id})}" class="fw-semibold" th:text="${p.nome}"></a>
+                    <div class="small text-muted" th:text="${p.tipo.descricao} + ' · ' + ${p.endereco}"></div>
+                    <img th:if="${p.fotoArquivo}" class="foto-miniatura mt-1" th:src="@{/admin/pontos/{id}/foto(id=${p.id})}" alt="Foto enviada">
+                </td>
+                <td><span th:each="m : ${p.materiais}" class="cor-material" th:style="'background:' + ${m.corHex}" th:title="${m.nome}"></span></td>
+                <td class="small">
+                    <span th:if="${p.sugeridoPor}" th:text="'Sugerido por ' + ${p.sugeridoPor.nome}"></span>
+                    <a th:if="${p.osmId}" th:href="@{'https://www.openstreetmap.org/' + ${p.osmTipo} + '/' + ${p.osmId}}"
+                       target="_blank" rel="noopener" th:text="'OpenStreetMap ' + ${p.osmTipo} + ' ' + ${p.osmId}"></a>
+                    <span th:if="${p.sugeridoPor == null and p.osmId == null}" th:text="${p.fonte} ?: 'Cadastro do administrador'"></span>
+                </td>
+                <td>
+                    <span class="badge" th:text="${p.status}"
+                          th:classappend="${p.status.name() == 'APROVADO'} ? text-bg-success : (${p.status.name() == 'PENDENTE'} ? text-bg-warning : text-bg-secondary)"></span>
+                    <div class="small text-muted" th:if="${p.motivoRecusa}" th:text="${p.motivoRecusa}"></div>
+                </td>
+                <td class="text-end">
+                    <div th:if="${p.status.name() == 'PENDENTE'}" class="d-flex flex-column gap-1">
+                        <form th:action="@{/admin/pontos/{id}/aprovar(id=${p.id})}" method="post">
+                            <button class="btn btn-sm btn-success w-100">Aprovar</button>
+                        </form>
+                        <form th:action="@{/admin/pontos/{id}/recusar(id=${p.id})}" method="post" class="d-flex gap-1">
+                            <input name="motivo" class="form-control form-control-sm" placeholder="Motivo" required>
+                            <button class="btn btn-sm btn-outline-danger">Recusar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

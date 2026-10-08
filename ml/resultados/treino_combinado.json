@@ -1,0 +1,221 @@
+{
+  "nome": "combinado",
+  "datasets": "todos",
+  "classes": [
+    "PLASTICO",
+    "PAPEL",
+    "METAL",
+    "VIDRO",
+    "ELETRONICO",
+    "ORGANICO",
+    "REJEITO"
+  ],
+  "n_treino": 8462,
+  "n_val": 1809,
+  "contagem_treino": {
+    "PLASTICO": 2274,
+    "PAPEL": 1592,
+    "METAL": 1147,
+    "VIDRO": 769,
+    "ELETRONICO": 1234,
+    "ORGANICO": 594,
+    "REJEITO": 852
+  },
+  "pesos_loss": {
+    "PLASTICO": 0.44562919877545637,
+    "PAPEL": 0.6365331645825301,
+    "METAL": 0.8834880540674697,
+    "VIDRO": 1.3177643667300232,
+    "ELETRONICO": 0.8211999983917244,
+    "ORGANICO": 1.7059946094535148,
+    "REJEITO": 1.1893906079992815
+  },
+  "hiperparametros": {
+    "arquitetura": "mobilenet_v3_large (ImageNet IMAGENET1K_V2)",
+    "entrada": 224,
+    "epocas_max": 25,
+    "paciencia": 6,
+    "batch": 64,
+    "otimizador": "AdamW",
+    "lr_cabeca": 0.001,
+    "lr_backbone": 0.0001,
+    "weight_decay": 0.0001,
+    "agendador": "OneCycle (cosine, 10% warmup)",
+    "label_smoothing": 0.1,
+    "precisao": "AMP fp16",
+    "seed": 42
+  },
+  "melhor_val_f1_macro": 0.9236386951568117,
+  "historico": [
+    {
+      "epoca": 1,
+      "perda_treino": 1.5127965636325604,
+      "val_acuracia": 0.7556661138750691,
+      "val_f1_macro": 0.7566900483606098,
+      "segundos": 39.6
+    },
+    {
+      "epoca": 2,
+      "perda_treino": 0.9827219902565985,
+      "val_acuracia": 0.8286346047540077,
+      "val_f1_macro": 0.832287728114929,
+      "segundos": 60.5
+    },
+    {
+      "epoca": 3,
+      "perda_treino": 0.8535016264879343,
+      "val_acuracia": 0.8424543946932007,
+      "val_f1_macro": 0.8455017945562082,
+      "segundos": 81.2
+    },
+    {
+      "epoca": 4,
+      "perda_treino": 0.7715161813027931,
+      "val_acuracia": 0.871199557766722,
+      "val_f1_macro": 0.8692634186495559,
+      "segundos": 101.8
+    },
+    {
+      "epoca": 5,
+      "perda_treino": 0.7168443491964629,
+      "val_acuracia": 0.882808181315644,
+      "val_f1_macro": 0.8897208281463731,
+      "segundos": 122.8
+    },
+    {
+      "epoca": 6,
+      "perda_treino": 0.6864830630295204,
+      "val_acuracia": 0.8883360972913211,
+      "val_f1_macro": 0.8912059345898029,
+      "segundos": 143.4
+    },
+    {
+      "epoca": 7,
+      "perda_treino": 0.6626667213259321,
+      "val_acuracia": 0.8905472636815921,
+      "val_f1_macro": 0.8951727096291845,
+      "segundos": 164.0
+    },
+    {
+      "epoca": 8,
+      "perda_treino": 0.6374682987278159,
+      "val_acuracia": 0.9032614704256495,
+      "val_f1_macro": 0.9073939662368227,
+      "segundos": 184.8
+    },
+    {
+      "epoca": 9,
+      "perda_treino": 0.6217532455921173,
+      "val_acuracia": 0.9098949695964621,
+      "val_f1_macro": 0.9138985955101523,
+      "segundos": 205.6
+    },
+    {
+      "epoca": 10,
+      "perda_treino": 0.6043600304560228,
+      "val_acuracia": 0.8999447208402432,
+      "val_f1_macro": 0.9052288455830148,
+      "segundos": 226.1
+    },
+    {
+      "epoca": 11,
+      "perda_treino": 0.5992726177880259,
+      "val_acuracia": 0.9098949695964621,
+      "val_f1_macro": 0.9149300756511175,
+      "segundos": 246.8
+    },
+    {
+      "epoca": 12,
+      "perda_treino": 0.5872905593026768,
+      "val_acuracia": 0.9104477611940298,
+      "val_f1_macro": 0.9156126001472604,
+      "segundos": 267.5
+    },
+    {
+      "epoca": 13,
+      "perda_treino": 0.5792674539667187,
+      "val_acuracia": 0.9154228855721394,
+      "val_f1_macro": 0.9195800573186165,
+      "segundos": 288.1
+    },
+    {
+      "epoca": 14,
+      "perda_treino": 0.5764148718479908,
+      "val_acuracia": 0.9093421779988944,
+      "val_f1_macro": 0.9146484530314731,
+      "segundos": 309.0
+    },
+    {
+      "epoca": 15,
+      "perda_treino": 0.5663847760720686,
+      "val_acuracia": 0.9148700939745716,
+      "val_f1_macro": 0.919462366719103,
+      "segundos": 329.5
+    },
+    {
+      "epoca": 16,
+      "perda_treino": 0.5611207970615589,
+      "val_acuracia": 0.9181868435599779,
+      "val_f1_macro": 0.9236035653885144,
+      "segundos": 350.2
+    },
+    {
+      "epoca": 17,
+      "perda_treino": 0.5609377121383493,
+      "val_acuracia": 0.9170812603648425,
+      "val_f1_macro": 0.9217147444139187,
+      "segundos": 371.0
+    },
+    {
+      "epoca": 18,
+      "perda_treino": 0.5556028900724469,
+      "val_acuracia": 0.9198452183526811,
+      "val_f1_macro": 0.9236386951568117,
+      "segundos": 391.6
+    },
+    {
+      "epoca": 19,
+      "perda_treino": 0.5555248027949622,
+      "val_acuracia": 0.9192924267551134,
+      "val_f1_macro": 0.9236248916493864,
+      "segundos": 412.2
+    },
+    {
+      "epoca": 20,
+      "perda_treino": 0.5556595174200607,
+      "val_acuracia": 0.9181868435599779,
+      "val_f1_macro": 0.9220860877394372,
+      "segundos": 433.0
+    },
+    {
+      "epoca": 21,
+      "perda_treino": 0.5511994492827039,
+      "val_acuracia": 0.9187396351575456,
+      "val_f1_macro": 0.9226245395785616,
+      "segundos": 453.7
+    },
+    {
+      "epoca": 22,
+      "perda_treino": 0.5500068601333734,
+      "val_acuracia": 0.9181868435599779,
+      "val_f1_macro": 0.9221610249688356,
+      "segundos": 474.3
+    },
+    {
+      "epoca": 23,
+      "perda_treino": 0.5498865714127367,
+      "val_acuracia": 0.9181868435599779,
+      "val_f1_macro": 0.9229288631462168,
+      "segundos": 494.8
+    },
+    {
+      "epoca": 24,
+      "perda_treino": 0.5507538858236689,
+      "val_acuracia": 0.9176340519624102,
+      "val_f1_macro": 0.9223931797772192,
+      "segundos": 515.3
+    }
+  ],
+  "tempo_total_s": 515.3,
+  "gpu": "NVIDIA GeForce RTX 3050 6GB Laptop GPU"
+}
