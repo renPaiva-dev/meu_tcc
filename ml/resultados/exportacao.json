@@ -1,10 +1,10 @@
 {
   "checkpoint": "modelo/checkpoints/combinado.pt",
-  "epoca": 18,
-  "val_f1_macro": 0.9236386951568117,
+  "epoca": 16,
+  "val_f1_macro": 0.9215313229579153,
   "opset": 17,
-  "dif_max_pytorch_onnx": 1.0192394256591797e-05,
+  "dif_max_pytorch_onnx": 7.875263690948486e-06,
   "tamanho_fp32_mb": 16.834089,
   "tamanho_int8_mb": 4.428515,
-  "tamanho_int8_estatico_mb": 4.696115
+  "tamanho_int8_estatico_mb": 4.696117
 }

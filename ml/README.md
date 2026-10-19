@@ -63,6 +63,32 @@ VIRTUAL_ENV=.venv uv pip install -r requirements.txt
 .venv/bin/python src/avaliar.py
 ```
 
+### Sem GPU local: Google Colab
+
+`treinar_colab.ipynb` roda todo o pipeline numa GPU gratuita do Colab e baixa
+`modelo_reciclathe.zip` (ONNX + labels + resultados) no fim. Instruções na primeira célula.
+
+### No Windows (PowerShell)
+
+Os scripts são portáveis (`pathlib`, `zipfile`). Diferenças: o Python do venv fica em
+`.venv\Scripts\python.exe`, e o `torch` do PyPI para Windows vem **sem CUDA** — instale-o pelo
+índice do PyTorch (escolha a versão de CUDA em https://pytorch.org/get-started/locally/ conforme o
+driver mostrado por `nvidia-smi`). O DataLoader usa 4 workers no Windows (variável `WORKERS`).
+
+```powershell
+cd ml
+py -3.12 -m venv .venv            # ou py -3.13 se não tiver o 3.12
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python -m pip install --force-reinstall torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/<cuXXX>
+.venv\Scripts\python -c "import torch; print(torch.cuda.is_available())"   # deve imprimir True
+
+.venv\Scripts\python -I src\baixar_dados.py
+.venv\Scripts\python -I src\preparar_dados.py
+.venv\Scripts\python src\treinar.py --nome combinado --epocas 25      # GPU de 4 GB: se faltar memória, --bs 32
+.venv\Scripts\python src\exportar_onnx.py --checkpoint modelo\checkpoints\combinado.pt
+.venv\Scripts\python src\avaliar.py
+```
+
 Seed fixa (42) em split, embaralhamento e inicialização. Em GPU, `cudnn.benchmark`
 introduz pequena não-determinância numérica (resultados podem variar na 3ª casa decimal).
 

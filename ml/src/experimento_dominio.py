@@ -39,7 +39,7 @@ ALVOS = ["trashnet", "realwaste", "taco"]
 def logits(modelo, linhas, classes_modelo, disp):
     # 'linhas' já está filtrada para classes que o modelo conhece
     ds = C.DatasetManifest(linhas, classes_modelo, C.transform_avaliacao())
-    dl = DataLoader(ds, batch_size=128, num_workers=10)
+    dl = DataLoader(ds, batch_size=128, num_workers=C.WORKERS)
     out, ys = [], []
     with torch.no_grad(), torch.autocast("cuda", enabled=disp.type == "cuda"):
         for x, y in dl:

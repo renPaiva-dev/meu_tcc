@@ -40,7 +40,7 @@ def avaliar_loader(modelo, loader, disp) -> tuple[np.ndarray, np.ndarray]:
 
 
 def treinar(nome: str, datasets: list[str] | None, epocas: int = 25, paciencia: int = 6,
-            bs: int = 64, lr: float = 1e-3, wd: float = 1e-4, workers: int = 10) -> dict:
+            bs: int = 64, lr: float = 1e-3, wd: float = 1e-4, workers: int = C.WORKERS) -> dict:
     C.fixar_seed()
     disp = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     treino = C.ler_manifest(datasets, "treino")

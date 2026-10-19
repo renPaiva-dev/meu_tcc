@@ -23,6 +23,9 @@ TAMANHO = 224
 MEDIA = [0.485, 0.456, 0.406]
 DESVIO = [0.229, 0.224, 0.225]
 SEED = 42
+# Processos do DataLoader. No Windows cada worker é um processo novo (spawn) que recarrega o
+# PyTorch, então usamos menos; ajustável com a variável de ambiente WORKERS.
+WORKERS = int(os.environ.get("WORKERS", 4 if os.name == "nt" else 10))
 
 
 def fixar_seed(seed: int = SEED) -> None:

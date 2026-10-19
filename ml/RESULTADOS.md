@@ -12,24 +12,24 @@ Datasets, licenças e mapeamento de classes estão em [DATASETS.md](DATASETS.md)
 | Classes (7) | PLASTICO, PAPEL, METAL, VIDRO, ELETRONICO, ORGANICO, REJEITO |
 | Dados | TrashNet + RealWaste + TACO (recortes) + GIZ e-waste (recortes) |
 | Divisão | 70/15/15 estratificada **por dataset**: 8.462 treino, 1.809 validação, 1.820 teste |
-| Seleção do modelo | Early stopping pelo F1-macro de validação (melhor época: 18, F1-macro val = 0,924) |
-| Hardware de treino | NVIDIA RTX 3050 6 GB (notebook), 515 s no total |
+| Seleção do modelo | Early stopping pelo F1-macro de validação (melhor época: 16, F1-macro val = 0,922) |
+| Hardware de treino | NVIDIA Tesla T4 (Google Colab, `treinar_colab.ipynb`), 1.541 s no total |
 
 Distribuição de classes por dataset e split: [resultados/distribuicao.md](resultados/distribuicao.md).
 
 ## 2. Desempenho no conjunto de teste (modelo final, FP32)
 
-**Acurácia 90,3% · F1-macro 0,907** (n = 1.820)
+**Acurácia 90,3% · F1-macro 0,908** (n = 1.820)
 
 | Classe | Precisão | Revocação | F1 | Suporte |
 |---|---|---|---|---|
-| PLASTICO | 0,880 | 0,840 | 0,860 | 488 |
-| PAPEL | 0,913 | 0,921 | 0,917 | 341 |
-| METAL | 0,893 | 0,940 | 0,916 | 249 |
-| VIDRO | 0,896 | 0,912 | 0,904 | 160 |
+| PLASTICO | 0,882 | 0,840 | 0,860 | 488 |
+| PAPEL | 0,918 | 0,915 | 0,916 | 341 |
+| METAL | 0,886 | 0,936 | 0,910 | 249 |
+| VIDRO | 0,905 | 0,894 | 0,899 | 160 |
 | ELETRONICO | 0,985 | 0,996 | 0,991 | 270 |
-| ORGANICO | 0,933 | 0,969 | 0,951 | 129 |
-| REJEITO | 0,820 | 0,798 | 0,809 | 183 |
+| ORGANICO | 0,947 | 0,977 | 0,962 | 129 |
+| REJEITO | 0,803 | 0,825 | 0,814 | 183 |
 
 Matriz de confusão: [resultados/matriz_confusao_fp32.png](resultados/matriz_confusao_fp32.png).
 
@@ -37,9 +37,9 @@ Matriz de confusão: [resultados/matriz_confusao_fp32.png](resultados/matriz_con
 
 | Dataset no teste | n | Acurácia | F1-macro |
 |---|---|---|---|
-| TrashNet (estúdio, fundo branco) | 378 | 94,4% | 0,921 |
-| RealWaste (aterro) | 714 | 93,3% | 0,934 |
-| **TACO (lixo fotografado no ambiente)** | 459 | **76,7%** | **0,497** |
+| TrashNet (estúdio, fundo branco) | 378 | 94,2% | 0,915 |
+| RealWaste (aterro) | 714 | 94,4% | 0,945 |
+| **TACO (lixo fotografado no ambiente)** | 459 | **75,2%** | **0,483** |
 | GIZ e-waste | 269 | 100% | 1,000 |
 
 O TACO é o domínio mais parecido com uma foto tirada por um cidadão na rua, e é nele que o
@@ -72,24 +72,33 @@ Cada modelo foi avaliado no teste de cada dataset, **restrito às classes em com
 
 Detalhes: [resultados/dominio.json](resultados/dominio.json).
 
+> Este experimento é da primeira rodada de treino (RTX 3050) e não foi refeito junto com o modelo
+> final atual (Colab). A linha "Todos" é, portanto, a do modelo anterior; os números do modelo
+> atual estão nas seções 2 e 4 e diferem em até ~1,5 ponto percentual, dentro da variação
+> esperada entre execuções (seção 5, item 6).
+
 ## 4. Exportação e desempenho de inferência
 
-ONNX opset 17; diferença máxima entre as saídas do PyTorch e do ONNX Runtime: 1,0 × 10⁻⁵.
-Latência medida em CPU de notebook (Intel i7-13620H, ONNX Runtime 1.30, batch 1, 200 execuções).
+ONNX opset 17; diferença máxima entre as saídas do PyTorch e do ONNX Runtime: 7,9 × 10⁻⁶.
+Latência medida na CPU da máquina do Colab (Intel Xeon @ 2,0 GHz, 2 vCPUs, ONNX Runtime 1.30,
+batch 1, 200 execuções). Com só 2 vCPUs, 4 threads disputam núcleos e ficam *mais lentas*
+que 1 thread; por isso a tabela mostra 1 thread e o padrão do ONNX Runtime.
 
-| Variante | Tamanho | Acurácia teste | F1-macro | Latência (1 thread) | Latência (4 threads) |
+| Variante | Tamanho | Acurácia teste | F1-macro | Latência (1 thread) | Latência (padrão ORT) |
 |---|---|---|---|---|---|
-| **FP32 (escolhida)** | 16,8 MB | **90,3%** | **0,907** | 5,3 ms | 1,8 ms |
-| INT8 dinâmica | 4,4 MB | 72,9% | 0,731 | 43,0 ms | 29,8 ms |
-| INT8 estática | 4,7 MB | 40,8% | 0,308 | 4,6 ms | 2,2 ms |
+| **FP32 (escolhida)** | 16,8 MB | **90,3%** | **0,908** | 7,5 ms | 7,5 ms |
+| INT8 dinâmica | 4,4 MB | 75,9% | 0,757 | 89,6 ms | 90,5 ms |
+| INT8 estática | 4,7 MB | 60,7% | 0,599 | 9,9 ms | 9,9 ms |
 
 **Decisão: o app usa o modelo FP32** (`modelo/reciclathe.onnx`). As duas quantizações perderam
-muita acurácia, e a INT8 dinâmica ainda ficou ~8× mais lenta (o ONNX Runtime não acelera bem as
+muita acurácia, e a INT8 dinâmica ainda ficou ~12× mais lenta (o ONNX Runtime não acelera bem as
 convoluções *depthwise* quantizadas dinamicamente). 16,8 MB é aceitável para um app. A
 quantização com treino consciente (QAT) ou FP16 fica como trabalho futuro.
 
 A latência no celular **não foi medida**: deve ser medida no aparelho durante os testes de
-usabilidade, porque a CPU de notebook é bem mais rápida que a de um celular intermediário.
+usabilidade, porque a CPU de servidor/notebook é bem mais rápida que a de um celular intermediário.
+A quantização também variou bastante entre execuções (INT8 estática: 40,8% na primeira rodada,
+60,7% nesta), o que reforça que ela é instável para esta arquitetura.
 
 ## 5. Limitações e ameaças à validade
 
@@ -104,7 +113,7 @@ usabilidade, porque a CPU de notebook é bem mais rápida que a de um celular in
    locais, garrafa de cajuína). O experimento de domínio mostra que essa diferença pode derrubar a
    acurácia.
 4. **Acurácia em uso real não é a do teste.** O número de referência para fotos de celular é o
-   do TACO (76%), não o geral (90%). A acurácia real será medida pelo feedback dos usuários no
+   do TACO (75%), não o geral (90%). A acurácia real será medida pelo feedback dos usuários no
    painel do sistema durante a avaliação com colegas.
 5. **Recortes de bounding box (TACO e GIZ)** têm enquadramento diferente de uma foto feita pelo
    usuário, que normalmente tem mais fundo.

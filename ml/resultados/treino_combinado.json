@@ -45,177 +45,163 @@
     "precisao": "AMP fp16",
     "seed": 42
   },
-  "melhor_val_f1_macro": 0.9236386951568117,
+  "melhor_val_f1_macro": 0.9215313229579153,
   "historico": [
     {
       "epoca": 1,
-      "perda_treino": 1.5127965636325604,
-      "val_acuracia": 0.7556661138750691,
-      "val_f1_macro": 0.7566900483606098,
-      "segundos": 39.6
+      "perda_treino": 1.5122724568301982,
+      "val_acuracia": 0.7678275290215588,
+      "val_f1_macro": 0.7678849725842456,
+      "segundos": 101.7
     },
     {
       "epoca": 2,
-      "perda_treino": 0.9827219902565985,
-      "val_acuracia": 0.8286346047540077,
-      "val_f1_macro": 0.832287728114929,
-      "segundos": 60.5
+      "perda_treino": 0.992077546137752,
+      "val_acuracia": 0.8253178551686015,
+      "val_f1_macro": 0.8239758585425382,
+      "segundos": 170.1
     },
     {
       "epoca": 3,
-      "perda_treino": 0.8535016264879343,
-      "val_acuracia": 0.8424543946932007,
-      "val_f1_macro": 0.8455017945562082,
-      "segundos": 81.2
+      "perda_treino": 0.8520147434689782,
+      "val_acuracia": 0.8584853510226644,
+      "val_f1_macro": 0.8635797947951592,
+      "segundos": 237.6
     },
     {
       "epoca": 4,
-      "perda_treino": 0.7715161813027931,
-      "val_acuracia": 0.871199557766722,
-      "val_f1_macro": 0.8692634186495559,
-      "segundos": 101.8
+      "perda_treino": 0.7759765675573638,
+      "val_acuracia": 0.8579325594250967,
+      "val_f1_macro": 0.8545322669772402,
+      "segundos": 305.1
     },
     {
       "epoca": 5,
-      "perda_treino": 0.7168443491964629,
-      "val_acuracia": 0.882808181315644,
-      "val_f1_macro": 0.8897208281463731,
-      "segundos": 122.8
+      "perda_treino": 0.7283167586182103,
+      "val_acuracia": 0.875069098949696,
+      "val_f1_macro": 0.8794779600885902,
+      "segundos": 372.4
     },
     {
       "epoca": 6,
-      "perda_treino": 0.6864830630295204,
-      "val_acuracia": 0.8883360972913211,
-      "val_f1_macro": 0.8912059345898029,
-      "segundos": 143.4
+      "perda_treino": 0.6838663563583837,
+      "val_acuracia": 0.892758430071863,
+      "val_f1_macro": 0.8968681701955283,
+      "segundos": 441.3
     },
     {
       "epoca": 7,
-      "perda_treino": 0.6626667213259321,
-      "val_acuracia": 0.8905472636815921,
-      "val_f1_macro": 0.8951727096291845,
-      "segundos": 164.0
+      "perda_treino": 0.6571650762449611,
+      "val_acuracia": 0.8938640132669984,
+      "val_f1_macro": 0.8981914123285215,
+      "segundos": 509.0
     },
     {
       "epoca": 8,
-      "perda_treino": 0.6374682987278159,
-      "val_acuracia": 0.9032614704256495,
-      "val_f1_macro": 0.9073939662368227,
-      "segundos": 184.8
+      "perda_treino": 0.6398457184885488,
+      "val_acuracia": 0.8977335544499724,
+      "val_f1_macro": 0.9023524407731142,
+      "segundos": 577.2
     },
     {
       "epoca": 9,
-      "perda_treino": 0.6217532455921173,
-      "val_acuracia": 0.9098949695964621,
-      "val_f1_macro": 0.9138985955101523,
-      "segundos": 205.6
+      "perda_treino": 0.6140963529998605,
+      "val_acuracia": 0.9027086788280818,
+      "val_f1_macro": 0.9027625621468678,
+      "segundos": 645.4
     },
     {
       "epoca": 10,
-      "perda_treino": 0.6043600304560228,
-      "val_acuracia": 0.8999447208402432,
-      "val_f1_macro": 0.9052288455830148,
-      "segundos": 226.1
+      "perda_treino": 0.609160257559834,
+      "val_acuracia": 0.8988391376451078,
+      "val_f1_macro": 0.904971694254806,
+      "segundos": 713.5
     },
     {
       "epoca": 11,
-      "perda_treino": 0.5992726177880259,
-      "val_acuracia": 0.9098949695964621,
-      "val_f1_macro": 0.9149300756511175,
-      "segundos": 246.8
+      "perda_treino": 0.5955455005168915,
+      "val_acuracia": 0.900497512437811,
+      "val_f1_macro": 0.9054387441059136,
+      "segundos": 784.0
     },
     {
       "epoca": 12,
-      "perda_treino": 0.5872905593026768,
-      "val_acuracia": 0.9104477611940298,
-      "val_f1_macro": 0.9156126001472604,
-      "segundos": 267.5
+      "perda_treino": 0.5877719128673727,
+      "val_acuracia": 0.9110005527915975,
+      "val_f1_macro": 0.9183084499567908,
+      "segundos": 854.2
     },
     {
       "epoca": 13,
-      "perda_treino": 0.5792674539667187,
-      "val_acuracia": 0.9154228855721394,
-      "val_f1_macro": 0.9195800573186165,
-      "segundos": 288.1
+      "perda_treino": 0.5785645892222723,
+      "val_acuracia": 0.9076838032061912,
+      "val_f1_macro": 0.9141530895525593,
+      "segundos": 923.3
     },
     {
       "epoca": 14,
-      "perda_treino": 0.5764148718479908,
-      "val_acuracia": 0.9093421779988944,
-      "val_f1_macro": 0.9146484530314731,
-      "segundos": 309.0
+      "perda_treino": 0.5755051816954757,
+      "val_acuracia": 0.9087893864013267,
+      "val_f1_macro": 0.915033791144461,
+      "segundos": 992.2
     },
     {
       "epoca": 15,
-      "perda_treino": 0.5663847760720686,
-      "val_acuracia": 0.9148700939745716,
-      "val_f1_macro": 0.919462366719103,
-      "segundos": 329.5
+      "perda_treino": 0.5683957663449374,
+      "val_acuracia": 0.9071310116086235,
+      "val_f1_macro": 0.9132365096671301,
+      "segundos": 1061.1
     },
     {
       "epoca": 16,
-      "perda_treino": 0.5611207970615589,
-      "val_acuracia": 0.9181868435599779,
-      "val_f1_macro": 0.9236035653885144,
-      "segundos": 350.2
+      "perda_treino": 0.5664465513193246,
+      "val_acuracia": 0.9148700939745716,
+      "val_f1_macro": 0.9215313229579153,
+      "segundos": 1130.2
     },
     {
       "epoca": 17,
-      "perda_treino": 0.5609377121383493,
-      "val_acuracia": 0.9170812603648425,
-      "val_f1_macro": 0.9217147444139187,
-      "segundos": 371.0
+      "perda_treino": 0.5608132070664203,
+      "val_acuracia": 0.9065782200110558,
+      "val_f1_macro": 0.913240095671398,
+      "segundos": 1198.6
     },
     {
       "epoca": 18,
-      "perda_treino": 0.5556028900724469,
-      "val_acuracia": 0.9198452183526811,
-      "val_f1_macro": 0.9236386951568117,
-      "segundos": 391.6
+      "perda_treino": 0.5573681017214601,
+      "val_acuracia": 0.9126589275843007,
+      "val_f1_macro": 0.9182125838750471,
+      "segundos": 1267.4
     },
     {
       "epoca": 19,
-      "perda_treino": 0.5555248027949622,
-      "val_acuracia": 0.9192924267551134,
-      "val_f1_macro": 0.9236248916493864,
-      "segundos": 412.2
+      "perda_treino": 0.5551955821839246,
+      "val_acuracia": 0.9115533443891652,
+      "val_f1_macro": 0.9183773380103526,
+      "segundos": 1335.9
     },
     {
       "epoca": 20,
-      "perda_treino": 0.5556595174200607,
-      "val_acuracia": 0.9181868435599779,
-      "val_f1_macro": 0.9220860877394372,
-      "segundos": 433.0
+      "perda_treino": 0.5551297438867164,
+      "val_acuracia": 0.9126589275843007,
+      "val_f1_macro": 0.91860740256129,
+      "segundos": 1404.2
     },
     {
       "epoca": 21,
-      "perda_treino": 0.5511994492827039,
-      "val_acuracia": 0.9187396351575456,
-      "val_f1_macro": 0.9226245395785616,
-      "segundos": 453.7
+      "perda_treino": 0.5528849011117761,
+      "val_acuracia": 0.9115533443891652,
+      "val_f1_macro": 0.9183908668838401,
+      "segundos": 1472.6
     },
     {
       "epoca": 22,
-      "perda_treino": 0.5500068601333734,
-      "val_acuracia": 0.9181868435599779,
-      "val_f1_macro": 0.9221610249688356,
-      "segundos": 474.3
-    },
-    {
-      "epoca": 23,
-      "perda_treino": 0.5498865714127367,
-      "val_acuracia": 0.9181868435599779,
-      "val_f1_macro": 0.9229288631462168,
-      "segundos": 494.8
-    },
-    {
-      "epoca": 24,
-      "perda_treino": 0.5507538858236689,
-      "val_acuracia": 0.9176340519624102,
-      "val_f1_macro": 0.9223931797772192,
-      "segundos": 515.3
+      "perda_treino": 0.5536656939622128,
+      "val_acuracia": 0.912106135986733,
+      "val_f1_macro": 0.9183820939026095,
+      "segundos": 1541.3
     }
   ],
-  "tempo_total_s": 515.3,
-  "gpu": "NVIDIA GeForce RTX 3050 6GB Laptop GPU"
+  "tempo_total_s": 1541.3,
+  "gpu": "Tesla T4"
 }
