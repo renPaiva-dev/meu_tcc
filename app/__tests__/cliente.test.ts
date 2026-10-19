@@ -124,3 +124,21 @@ describe('ClienteApi', () => {
     expect((chamadas[0].init.headers as Record<string, string>)['Content-Type']).toBeUndefined();
   });
 });
+
+describe('ClienteApi — respostas que não vêm da API', () => {
+  it('200 com HTML (portal cativo) vira ErroRede, não erro definitivo', async () => {
+    const { cliente } = criarCliente([
+      new Response('<html>Faça login no Wi-Fi</html>', { status: 200, headers: { 'Content-Type': 'text/html' } }),
+    ]);
+    await expect(cliente.registrarIdentificacao({ material: 'VIDRO', confianca: 0.9 })).rejects.toBeInstanceOf(
+      ErroRede,
+    );
+  });
+
+  it('busca um ponto pelo id', async () => {
+    const { cliente, chamadas } = criarCliente([respostaJson(200, { id: 5, nome: 'PEV' })]);
+    const p = await cliente.ponto(5);
+    expect(p.nome).toBe('PEV');
+    expect(chamadas[0].url).toBe('http://api.teste/api/v1/pontos/5');
+  });
+});

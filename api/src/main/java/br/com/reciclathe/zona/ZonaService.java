@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,11 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @Service
 public class ZonaService {
+
+    /** Tamanho da coluna telefone_coleta. */
+    public static final int TELEFONE_MAXIMO = 30;
+
+    private static final Set<String> GEOMETRIAS_ACEITAS = Set.of("Polygon", "MultiPolygon");
 
     private final ZonaRepository zonas;
     private final JdbcClient jdbc;
@@ -64,13 +71,32 @@ public class ZonaService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    public List<Bairro> listarBairros() {
+        return jdbc.sql("SELECT id, nome, zona_codigo FROM bairro ORDER BY zona_codigo, nome")
+                .query((rs, i) -> new Bairro(rs.getLong("id"), rs.getString("nome"), rs.getString("zona_codigo")))
+                .list();
+    }
+
+    @Transactional
+    public void excluirBairro(Long id) {
+        if (jdbc.sql("DELETE FROM bairro WHERE id = :id").param("id", id).update() == 0) {
+            throw new RecursoNaoEncontradoException("Bairro não encontrado");
+        }
+    }
+
     @Transactional
     public void atualizarTelefone(String codigo, String telefone) {
-        buscar(codigo).setTelefoneColeta(telefone == null || telefone.isBlank() ? null : telefone.strip());
+        String valor = telefone == null || telefone.isBlank() ? null : telefone.strip();
+        if (valor != null && valor.length() > TELEFONE_MAXIMO) {
+            throw new RegraNegocioException("O telefone deve ter no máximo %d caracteres".formatted(TELEFONE_MAXIMO));
+        }
+        buscar(codigo).setTelefoneColeta(valor);
     }
 
     /**
-     * Importa (ou atualiza) bairros de um FeatureCollection GeoJSON em WGS84.
+     * Importa (ou atualiza) bairros de um FeatureCollection GeoJSON em WGS84. É tudo ou nada: qualquer
+     * feição inválida desfaz a importação inteira, com uma mensagem que aponta o bairro problemático.
+     * Polígonos com defeitos comuns (auto-interseção, anel mal fechado) são corrigidos com ST_MakeValid.
      *
      * @param propriedadeNome nome da propriedade com o nome do bairro
      * @param propriedadeZona nome da propriedade com a zona (ex.: "Norte", "SUDESTE")
@@ -100,18 +126,39 @@ public class ZonaService {
             if (nome.isEmpty() || geometria.isMissingNode() || geometria.isNull()) {
                 throw new RegraNegocioException("Feição sem nome de bairro ou geometria (propriedade '" + propriedadeNome + "')");
             }
+            if (nome.length() > 120) {
+                throw new RegraNegocioException("Nome de bairro com mais de 120 caracteres: " + nome.substring(0, 40) + "…");
+            }
             if (zona == null) {
                 throw new RegraNegocioException("Zona desconhecida '" + zonaInformada + "' no bairro " + nome);
             }
-            jdbc.sql("""
-                            INSERT INTO bairro (nome, zona_codigo, geom)
-                            VALUES (:nome, :zona, ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(:geom), 4326)))
-                            ON CONFLICT (nome) DO UPDATE SET zona_codigo = EXCLUDED.zona_codigo, geom = EXCLUDED.geom
-                            """)
-                    .param("nome", nome)
-                    .param("zona", zona)
-                    .param("geom", geometria.toString())
-                    .update();
+            String tipo = geometria.path("type").asString("");
+            if (!GEOMETRIAS_ACEITAS.contains(tipo)) {
+                throw new RegraNegocioException("A geometria do bairro " + nome
+                        + " deve ser Polygon ou MultiPolygon (veio '" + tipo + "')");
+            }
+            int gravados;
+            try {
+                // ST_MakeValid pode devolver uma coleção mista; ST_CollectionExtract(..., 3) fica só com os polígonos
+                gravados = jdbc.sql("""
+                                WITH g AS (
+                                    SELECT ST_Multi(ST_CollectionExtract(
+                                               ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON(:geom), 4326)), 3)) AS geom)
+                                INSERT INTO bairro (nome, zona_codigo, geom)
+                                SELECT :nome, :zona, g.geom FROM g WHERE NOT ST_IsEmpty(g.geom)
+                                ON CONFLICT (nome) DO UPDATE SET zona_codigo = EXCLUDED.zona_codigo, geom = EXCLUDED.geom
+                                """)
+                        .param("nome", nome)
+                        .param("zona", zona)
+                        .param("geom", geometria.toString())
+                        .update();
+            } catch (DataAccessException e) {
+                throw new RegraNegocioException("Geometria inválida no bairro " + nome
+                        + ": confira as coordenadas (WGS84, anéis fechados com ao menos 4 posições)");
+            }
+            if (gravados == 0) {
+                throw new RegraNegocioException("A geometria do bairro " + nome + " é vazia ou não forma um polígono");
+            }
             importados++;
         }
         return importados;
@@ -124,5 +171,8 @@ public class ZonaService {
     }
 
     public record Localizacao(Zona zona, String bairro) {
+    }
+
+    public record Bairro(Long id, String nome, String zona) {
     }
 }

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,7 +59,7 @@ public class IdentificacaoService {
     public Optional<EventoPontuacao> registrarFeedback(Long usuarioId, Long identificacaoId, boolean correto,
                                                        String materialCorreto, boolean consentimentoFoto,
                                                        MultipartFile foto) {
-        Identificacao identificacao = identificacoes.findById(identificacaoId)
+        Identificacao identificacao = identificacoes.findParaAtualizar(identificacaoId)
                 .filter(i -> i.pertenceA(usuarioId))
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Identificação não encontrada"));
         if (identificacao.temFeedback()) {
@@ -73,7 +75,8 @@ public class IdentificacaoService {
                 throw new RegraNegocioException("O material correto é igual ao identificado");
             }
         }
-        // Sem consentimento explícito, a foto é descartada mesmo que tenha sido enviada
+        // Sem consentimento explícito, a foto é descartada mesmo que tenha sido enviada.
+        // Se a transação for desfeita, o ArmazenamentoFotos apaga o arquivo gravado.
         String arquivo = consentimentoFoto && foto != null && !foto.isEmpty() ? fotos.salvar(foto) : null;
         identificacao.registrarFeedback(correto, corrigido, arquivo);
         return pontuacao.registrarFeedback(identificacao.getUsuario(), identificacao.getId());
@@ -83,12 +86,20 @@ public class IdentificacaoService {
         return identificacoes.findByUsuarioIdOrderByCriadoEmDesc(usuarioId, Limit.of(limite));
     }
 
-    public List<Identificacao> errosRecentes(int limite) {
-        return identificacoes.findByFeedbackCorretoFalseOrderByFeedbackEmDesc(Limit.of(limite));
+    /** Feedbacks para o painel: erros, acertos ou todos, opcionalmente só os que têm foto. */
+    public Page<Identificacao> feedbacks(FiltroFeedback filtro, boolean comFoto, Pageable pagina) {
+        return identificacoes.buscarFeedbacks(filtro == FiltroFeedback.TODOS, filtro == FiltroFeedback.ACERTOS,
+                comFoto, pagina);
     }
 
     public Identificacao buscar(Long id) {
         return identificacoes.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Identificação não encontrada"));
+    }
+
+    public enum FiltroFeedback {
+        ERROS,
+        ACERTOS,
+        TODOS
     }
 }

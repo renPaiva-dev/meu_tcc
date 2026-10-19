@@ -41,6 +41,10 @@ public class Usuario {
     @JoinColumn(name = "zona_codigo")
     private Zona zona;
 
+    /** Conta bloqueada pelo administrador não faz login nem usa tokens já emitidos. */
+    @Column(nullable = false)
+    private boolean ativo = true;
+
     @CreationTimestamp
     private Instant criadoEm;
 
@@ -80,6 +84,18 @@ public class Usuario {
 
     public void setZona(Zona zona) {
         this.zona = zona;
+    }
+
+    public void alterarSenha(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 
     public Instant getCriadoEm() {

@@ -72,44 +72,6 @@ export function topK(probabilidades: readonly number[], classes: readonly string
     .slice(0, k);
 }
 
-/**
- * Recorte central quadrado (em pixels da imagem original), para redimensionar
- * sem distorcer a proporção do objeto.
- */
-export function recorteCentralQuadrado(
-  largura: number,
-  altura: number,
-): { originX: number; originY: number; width: number; height: number } {
-  const lado = Math.min(largura, altura);
-  return {
-    originX: Math.floor((largura - lado) / 2),
-    originY: Math.floor((altura - lado) / 2),
-    width: lado,
-    height: lado,
-  };
-}
-
-const ALFABETO_B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-/** Decodifica base64 para bytes (sem depender de atob/Buffer). */
-export function base64ParaBytes(b64: string): Uint8Array {
-  const limpo = b64.replace(/^data:[^,]*,/, '').replace(/[^A-Za-z0-9+/]/g, '');
-  const tamanho = Math.floor((limpo.length * 3) / 4);
-  const bytes = new Uint8Array(tamanho);
-  let j = 0;
-  for (let i = 0; i < limpo.length; i += 4) {
-    const a = ALFABETO_B64.indexOf(limpo[i]);
-    const b = ALFABETO_B64.indexOf(limpo[i + 1]);
-    const c = i + 2 < limpo.length ? ALFABETO_B64.indexOf(limpo[i + 2]) : 0;
-    const d = i + 3 < limpo.length ? ALFABETO_B64.indexOf(limpo[i + 3]) : 0;
-    const n = (a << 18) | (b << 12) | (c << 6) | d;
-    if (j < tamanho) bytes[j++] = (n >> 16) & 0xff;
-    if (j < tamanho && i + 2 < limpo.length) bytes[j++] = (n >> 8) & 0xff;
-    if (j < tamanho && i + 3 < limpo.length) bytes[j++] = n & 0xff;
-  }
-  return bytes.subarray(0, j);
-}
-
 /** Valida o labels.json gerado pelo pipeline de ML. */
 export function validarRotulos(json: unknown): Rotulos {
   const r = json as Partial<Rotulos> | null;

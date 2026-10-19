@@ -35,19 +35,14 @@ interface PropsMaterialUnico {
   materiais: Material[];
   valor: string | null;
   aoMudar: (codigo: string | null) => void;
-  /** Mostra a opção "Todos" (valor null). */
-  permitirTodos?: boolean;
   /** Restringe às opções informadas. */
   opcoes?: string[];
 }
 
-export function SeletorMaterial({ materiais, valor, aoMudar, permitirTodos, opcoes }: PropsMaterialUnico) {
+export function SeletorMaterial({ materiais, valor, aoMudar, opcoes }: PropsMaterialUnico) {
   const lista = opcoes ?? codigos(materiais);
   return (
     <GrupoChips rotulo="Material" unico>
-      {permitirTodos ? (
-        <Chip papel="radio" rotulo="Todos" selecionado={valor == null} aoPressionar={() => aoMudar(null)} />
-      ) : null}
       {lista.map((codigo) => {
         const m = encontrarMaterial(materiais, codigo);
         return (

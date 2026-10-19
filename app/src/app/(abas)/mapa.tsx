@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { DESCRICAO_TIPO_PONTO, type PontoColeta } from '../../api/tipos';
+import { ATRIBUICAO_OSM, DESCRICAO_TIPO_PONTO, ehDoOpenStreetMap, type PontoColeta } from '../../api/tipos';
 import { Aviso, Chip } from '../../componentes/basicos';
 import { Botao } from '../../componentes/Botao';
 import { carregarMapa } from '../../componentes/mapa';
@@ -24,10 +24,13 @@ export default function Mapa() {
   const [verMapa, setVerMapa] = useState(true);
   const mapa = carregarMapa();
 
-  // "Onde entregar" na tela de resultado abre esta aba com ?material=...
-  useEffect(() => {
+  // "Onde entregar" na tela de resultado abre esta aba com ?material=... (a aba pode já estar
+  // montada; ajusta o filtro durante a renderização quando o parâmetro muda).
+  const [materialParam, setMaterialParam] = useState(params.material);
+  if (params.material !== materialParam) {
+    setMaterialParam(params.material);
     if (params.material) setFiltro(params.material);
-  }, [params.material]);
+  }
 
   useEffect(() => {
     void (async () => {
@@ -147,6 +150,7 @@ export default function Mapa() {
               <Text style={estilos.itemTexto} numberOfLines={2}>
                 {item.endereco}
               </Text>
+              {ehDoOpenStreetMap(item) ? <Text style={estilos.itemTexto}>Dados {ATRIBUICAO_OSM}</Text> : null}
             </View>
             {item.distancia != null ? <Text style={estilos.distancia}>{formatarDistancia(item.distancia)}</Text> : null}
           </Pressable>

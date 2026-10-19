@@ -20,8 +20,10 @@
                 <li class="nav-item"><a class="nav-link" th:classappend="${ativo == 'pontos'} ? active" th:href="@{/admin/pontos}">Pontos de coleta</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${ativo == 'materiais'} ? active" th:href="@{/admin/materiais}">Orientações</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${ativo == 'zonas'} ? active" th:href="@{/admin/zonas}">Zonas</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${ativo == 'erros'} ? active" th:href="@{/admin/erros-modelo}">Erros do modelo</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${ativo == 'erros'} ? active" th:href="@{/admin/erros-modelo}">Feedback do modelo</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${ativo == 'usuarios'} ? active" th:href="@{/admin/usuarios}">Usuários</a></li>
             </ul>
+            <a class="btn btn-link btn-sm text-light" th:classappend="${ativo == 'conta'} ? fw-semibold" th:href="@{/admin/conta}">Minha senha</a>
             <form th:action="@{/logout}" method="post">
                 <button class="btn btn-outline-light btn-sm" type="submit">Sair</button>
             </form>
@@ -33,6 +35,19 @@
     <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
     <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
 </div>
+
+<!-- Paginação: "url" é a rota da lista já com os filtros (ex.: /admin/pontos?status=PENDENTE) -->
+<nav th:fragment="paginacao(pagina, url)" th:if="${pagina.totalPages > 1}"
+     class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+    <span class="small text-muted"
+          th:text="|Página ${pagina.number + 1} de ${pagina.totalPages} · ${pagina.totalElements} itens|"></span>
+    <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" th:classappend="${pagina.first} ? disabled">
+            <a class="page-link" th:href="@{${url}(pagina=${pagina.number - 1})}">Anterior</a></li>
+        <li class="page-item" th:classappend="${pagina.last} ? disabled">
+            <a class="page-link" th:href="@{${url}(pagina=${pagina.number + 1})}">Próxima</a></li>
+    </ul>
+</nav>
 
 <th:block th:fragment="scripts">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

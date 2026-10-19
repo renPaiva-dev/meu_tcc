@@ -26,7 +26,7 @@ export default function Cadastro() {
     const e: Erros = {};
     if (!nome.trim()) e.nome = 'Informe seu nome.';
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = 'E-mail inválido.';
-    if (senha.length < 6) e.senha = 'A senha deve ter pelo menos 6 caracteres.';
+    if (senha.length < 8) e.senha = 'A senha deve ter pelo menos 8 caracteres.';
     return e;
   }
 
@@ -65,7 +65,7 @@ export default function Cadastro() {
         erro={erros.email}
       />
       <CampoTexto
-        rotulo="Senha (mínimo 6 caracteres)"
+        rotulo="Senha (mínimo 8 caracteres)"
         value={senha}
         onChangeText={setSenha}
         secureTextEntry

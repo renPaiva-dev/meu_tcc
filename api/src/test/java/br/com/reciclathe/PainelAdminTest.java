@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,6 +52,71 @@ class PainelAdminTest extends IntegracaoTest {
         mvc.perform(get("/admin/zonas").with(admin)).andExpect(status().isOk());
         mvc.perform(get("/admin/erros-modelo").with(admin)).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Vidro")));
+        mvc.perform(get("/admin/erros-modelo").param("filtro", "ACERTOS").param("comFoto", "true").with(admin))
+                .andExpect(status().isOk());
+        mvc.perform(get("/admin/erros-modelo").param("filtro", "TODOS").param("pagina", "3").with(admin))
+                .andExpect(status().isOk());
+        mvc.perform(get("/admin/pontos").param("status", "PENDENTE").param("pagina", "-1").with(admin))
+                .andExpect(status().isOk());
+        mvc.perform(get("/admin/usuarios").with(admin)).andExpect(status().isOk())
+                .andExpect(content().string(containsString("Hugo")));
+        mvc.perform(get("/admin/conta").with(admin)).andExpect(status().isOk());
+    }
+
+    @Test
+    void erroNoPainelEhPaginaHtml() throws Exception {
+        var admin = user(ADMIN).roles("ADMIN");
+        mvc.perform(get("/admin/pontos/999999").with(admin))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("Ponto não encontrado")));
+        // A API continua respondendo problem+json
+        mvc.perform(get("/api/v1/pontos/999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+    }
+
+    @Test
+    void formularioDoPontoMostraQuemSugeriuERevisao() throws Exception {
+        String token = cadastrar("Kátia Sugestora", null);
+        String resposta = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .multipart("/api/v1/pontos/sugestoes")
+                        .param("nome", "PEV da Kátia").param("tipo", "PEV").param("endereco", "Rua")
+                        .param("latitude", "-5.09").param("longitude", "-42.80").param("materiais", "PAPEL")
+                        .header("Authorization", token))
+                .andReturn().getResponse().getContentAsString();
+        Long id = ((Number) com.jayway.jsonpath.JsonPath.read(resposta, "$.id")).longValue();
+        var admin = user(ADMIN).roles("ADMIN");
+        mvc.perform(post("/admin/pontos/" + id + "/recusar").with(admin).with(csrf()).param("motivo", "Sem placa no local"));
+
+        mvc.perform(get("/admin/pontos/" + id).with(admin))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Kátia Sugestora")))
+                .andExpect(content().string(containsString("Sem placa no local")))
+                .andExpect(content().string(containsString("Aprovar e publicar")));
+    }
+
+    @Test
+    void trocaDeSenhaDoAdmin() throws Exception {
+        var admin = user(ADMIN).roles("ADMIN");
+        mvc.perform(post("/admin/conta/senha").with(admin).with(csrf())
+                        .param("senhaAtual", "admin-teste").param("novaSenha", "curta").param("confirmacao", "curta"))
+                .andExpect(flash().attribute("erro", containsString("8 caracteres")));
+        mvc.perform(post("/admin/conta/senha").with(admin).with(csrf())
+                        .param("senhaAtual", "errada").param("novaSenha", "nova-senha-123").param("confirmacao", "nova-senha-123"))
+                .andExpect(flash().attribute("erro", containsString("senha atual")));
+        try {
+            mvc.perform(post("/admin/conta/senha").with(admin).with(csrf())
+                            .param("senhaAtual", "admin-teste").param("novaSenha", "nova-senha-123")
+                            .param("confirmacao", "nova-senha-123"))
+                    .andExpect(flash().attribute("mensagem", "Senha alterada."));
+            mvc.perform(post("/login").with(csrf()).param("username", ADMIN).param("password", "nova-senha-123"))
+                    .andExpect(redirectedUrl("/admin"));
+        } finally {
+            // Devolve a senha original: o contexto (e o banco) é compartilhado entre as classes de teste
+            mvc.perform(post("/admin/conta/senha").with(admin).with(csrf())
+                    .param("senhaAtual", "nova-senha-123").param("novaSenha", "admin-teste").param("confirmacao", "admin-teste"));
+        }
     }
 
     @Test

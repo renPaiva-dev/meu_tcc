@@ -1,20 +1,40 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragmentos :: head('Erros do modelo')}"></head>
+<head th:replace="~{fragmentos :: head('Feedback do modelo')}"></head>
 <body>
 <nav th:replace="~{fragmentos :: menu('erros')}"></nav>
 <main class="container pb-5">
-    <h1 class="h3 mb-1">Erros do modelo apontados pelos usuários</h1>
-    <p class="text-muted">Fotos só aparecem quando o usuário consentiu em compartilhá-las. Material para o próximo retreino.</p>
-    <p th:if="${erros.isEmpty()}" class="text-muted">Nenhuma correção recebida ainda.</p>
-    <div class="table-responsive" th:unless="${erros.isEmpty()}">
+    <h1 class="h3 mb-1">Feedback dos usuários sobre o modelo</h1>
+    <p class="text-muted">Fotos só aparecem quando o usuário consentiu em compartilhá-las. Erros e acertos com foto
+        são dados rotulados para o próximo retreino.</p>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a class="nav-link" th:classappend="${filtro.name() == 'ERROS'} ? active"
+                                    th:href="@{/admin/erros-modelo(filtro=ERROS, comFoto=${comFoto})}">Erros</a></li>
+            <li class="nav-item"><a class="nav-link" th:classappend="${filtro.name() == 'ACERTOS'} ? active"
+                                    th:href="@{/admin/erros-modelo(filtro=ACERTOS, comFoto=${comFoto})}">Acertos</a></li>
+            <li class="nav-item"><a class="nav-link" th:classappend="${filtro.name() == 'TODOS'} ? active"
+                                    th:href="@{/admin/erros-modelo(filtro=TODOS, comFoto=${comFoto})}">Todos</a></li>
+        </ul>
+        <a class="btn btn-sm" th:classappend="${comFoto} ? btn-success : btn-outline-success"
+           th:href="@{/admin/erros-modelo(filtro=${filtro}, comFoto=${!comFoto})}"
+           th:text="${comFoto} ? 'Mostrando só com foto' : 'Mostrar só com foto'"></a>
+    </div>
+
+    <p th:if="${feedbacks.isEmpty()}" class="text-muted">Nenhum feedback nesta lista.</p>
+    <div class="table-responsive" th:unless="${feedbacks.isEmpty()}">
         <table class="table align-middle bg-white">
-            <thead><tr><th>Foto</th><th>Modelo disse</th><th>Usuário corrigiu para</th><th>Confiança</th><th>Versão do modelo</th><th>Quando</th></tr></thead>
+            <thead><tr><th>Foto</th><th>Modelo disse</th><th>Resultado</th><th>Confiança</th><th>Versão do modelo</th><th>Quando</th></tr></thead>
             <tbody>
-            <tr th:each="i : ${erros}">
+            <tr th:each="i : ${feedbacks}">
                 <td><img th:if="${i.fotoArquivo}" class="foto-miniatura" th:src="@{/admin/erros-modelo/{id}/foto(id=${i.id})}" alt="Foto"><span th:unless="${i.fotoArquivo}" class="text-muted small">sem foto</span></td>
                 <td th:text="${i.materialPrevisto.nome}"></td>
-                <td class="fw-semibold" th:text="${i.materialCorrigido.nome}"></td>
+                <td>
+                    <span th:if="${i.feedbackCorreto}" class="badge text-bg-success">Acertou</span>
+                    <span th:unless="${i.feedbackCorreto}" class="fw-semibold"
+                          th:text="'Errou: era ' + (${i.materialCorrigido?.nome} ?: '—')"></span>
+                </td>
                 <td th:text="${#numbers.formatPercent(i.confianca, 1, 0)}"></td>
                 <td class="small" th:text="${i.versaoModelo} ?: '—'"></td>
                 <td class="small" th:text="${#temporals.format(i.feedbackEm, 'dd/MM/yyyy HH:mm', 'America/Fortaleza')}"></td>
@@ -22,6 +42,7 @@
             </tbody>
         </table>
     </div>
+    <nav th:replace="~{fragmentos :: paginacao(${feedbacks}, ${urlPaginacao})}"></nav>
 </main>
 <th:block th:replace="~{fragmentos :: scripts}"></th:block>
 </body>

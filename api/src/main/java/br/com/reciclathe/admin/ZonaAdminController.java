@@ -29,14 +29,20 @@ public class ZonaAdminController {
     public String listar(Model model) {
         model.addAttribute("zonas", zonas.listar());
         model.addAttribute("bairros", zonas.contarBairrosPorZona());
+        model.addAttribute("listaBairros", zonas.listarBairros());
+        model.addAttribute("telefoneMaximo", ZonaService.TELEFONE_MAXIMO);
         return "admin/zonas";
     }
 
     @PostMapping("/{codigo}")
-    public String atualizarTelefone(@PathVariable String codigo, @RequestParam String telefone,
+    public String atualizarTelefone(@PathVariable String codigo, @RequestParam(defaultValue = "") String telefone,
                                     RedirectAttributes redirect) {
-        zonas.atualizarTelefone(codigo, telefone);
-        redirect.addFlashAttribute("mensagem", "Telefone atualizado.");
+        try {
+            zonas.atualizarTelefone(codigo, telefone);
+            redirect.addFlashAttribute("mensagem", "Telefone atualizado.");
+        } catch (RegraNegocioException e) {
+            redirect.addFlashAttribute("erro", e.getMessage());
+        }
         return "redirect:/admin/zonas";
     }
 
@@ -49,6 +55,13 @@ public class ZonaAdminController {
         } catch (RegraNegocioException e) {
             redirect.addFlashAttribute("erro", e.getMessage());
         }
+        return "redirect:/admin/zonas";
+    }
+
+    @PostMapping("/bairros/{id}/excluir")
+    public String excluirBairro(@PathVariable Long id, RedirectAttributes redirect) {
+        zonas.excluirBairro(id);
+        redirect.addFlashAttribute("mensagem", "Bairro excluído.");
         return "redirect:/admin/zonas";
     }
 }

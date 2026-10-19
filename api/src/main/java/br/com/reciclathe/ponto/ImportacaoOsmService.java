@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestClientException;
 
 import br.com.reciclathe.config.ReciclatheProperties;
@@ -23,7 +24,8 @@ import tools.jackson.databind.json.JsonMapper;
  *
  * <p>Os pontos entram sempre como PENDENTES: no OSM a maioria não tem nome nem lista de materiais,
  * então o administrador revisa e completa antes de publicar. Uma nova importação atualiza os pontos
- * ainda pendentes e não mexe nos que o administrador já aprovou ou recusou.
+ * ainda pendentes e não mexe nos que o administrador já aprovou ou recusou, nem recria os que ele excluiu
+ * (tabela osm_ignorado).
  */
 @Service
 public class ImportacaoOsmService {
@@ -60,20 +62,30 @@ public class ImportacaoOsmService {
     private final PontoColetaRepository pontos;
     private final MaterialService materiais;
     private final JsonMapper jsonMapper;
+    private final TransactionTemplate transacao;
     private final String municipio;
 
     public ImportacaoOsmService(ClienteOverpass overpass, PontoColetaRepository pontos, MaterialService materiais,
-                                JsonMapper jsonMapper, ReciclatheProperties props) {
+                                JsonMapper jsonMapper, PlatformTransactionManager transacoes,
+                                ReciclatheProperties props) {
         this.overpass = overpass;
         this.pontos = pontos;
         this.materiais = materiais;
         this.jsonMapper = jsonMapper;
+        this.transacao = new TransactionTemplate(transacoes);
         this.municipio = props.osm().municipio();
     }
 
-    @Transactional
+    /**
+     * A consulta ao Overpass pode levar mais de um minuto: é feita antes e fora da transação,
+     * para não segurar uma conexão do banco enquanto espera a rede.
+     */
     public Resultado importar() {
         JsonNode elementos = consultarOsm();
+        return transacao.execute(status -> gravar(elementos));
+    }
+
+    private Resultado gravar(JsonNode elementos) {
         int novos = 0;
         int atualizados = 0;
         int jaRevisados = 0;
@@ -92,7 +104,8 @@ public class ImportacaoOsmService {
             }
 
             var existente = pontos.findByOsmTipoAndOsmId(tipoOsm, idOsm);
-            if (existente.isPresent() && existente.get().getStatus() != StatusPonto.PENDENTE) {
+            boolean excluidoPeloAdmin = existente.isEmpty() && pontos.osmIgnorado(tipoOsm, idOsm);
+            if (excluidoPeloAdmin || existente.isPresent() && existente.get().getStatus() != StatusPonto.PENDENTE) {
                 jaRevisados++;
                 continue;
             }

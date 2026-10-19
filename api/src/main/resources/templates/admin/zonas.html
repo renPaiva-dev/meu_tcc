@@ -17,7 +17,8 @@
                     <td th:text="${bairros.getOrDefault(z.codigo, 0)}"></td>
                     <td>
                         <form th:action="@{/admin/zonas/{c}(c=${z.codigo})}" method="post" class="d-flex gap-2">
-                            <input class="form-control form-control-sm" name="telefone" th:value="${z.telefoneColeta}">
+                            <input class="form-control form-control-sm" name="telefone" th:value="${z.telefoneColeta}"
+                                   th:maxlength="${telefoneMaximo}">
                             <button class="btn btn-sm btn-outline-success">Salvar</button>
                         </form>
                         <div class="small text-muted mt-1" th:if="${z.fonte}" th:text="'Fonte: ' + ${z.fonte}"></div>
@@ -28,7 +29,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card mb-4">
         <div class="card-header">Importar bairros (GeoJSON)</div>
         <div class="card-body">
             <p class="small text-muted">Com os bairros importados, o app descobre a zona do usuário pela localização.
@@ -41,6 +42,32 @@
                 <div class="col-md-2"><input class="form-control" name="propriedadeZona" value="zona" title="Propriedade com a zona" required></div>
                 <div class="col-md-2"><button class="btn btn-success w-100">Importar</button></div>
             </form>
+            <p class="small text-muted mt-2 mb-0">Arquivo de até 20 MB. Cada feição precisa de geometria Polygon ou
+                MultiPolygon; pequenos defeitos de topologia são corrigidos automaticamente.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Bairros importados <span class="badge text-bg-light" th:text="${listaBairros.size()}"></span></div>
+        <div class="card-body">
+            <p th:if="${listaBairros.isEmpty()}" class="text-muted mb-0">Nenhum bairro importado: o app pede a zona ao usuário.</p>
+            <div class="table-responsive" th:unless="${listaBairros.isEmpty()}" style="max-height: 420px">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Bairro</th><th>Zona</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="b : ${listaBairros}">
+                        <td th:text="${b.nome()}"></td>
+                        <td th:text="${b.zona()}"></td>
+                        <td class="text-end">
+                            <form th:action="@{/admin/zonas/bairros/{id}/excluir(id=${b.id()})}" method="post"
+                                  th:data-nome="${b.nome()}" onsubmit="return confirm('Excluir o bairro ' + this.dataset.nome + '?')">
+                                <button class="btn btn-sm btn-outline-danger">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>

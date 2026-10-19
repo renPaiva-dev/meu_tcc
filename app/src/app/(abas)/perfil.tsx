@@ -52,6 +52,8 @@ export default function Perfil() {
   }, [abaRanking, zonaUsuario]);
 
   useEffect(() => {
+    // Inicia o carregamento (rede); os setState acontecem quando a resposta chega.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void carregar();
   }, [carregar]);
 
@@ -216,6 +218,9 @@ export default function Perfil() {
 
       <Link href="/privacidade" style={estilos.link}>
         Privacidade e dados coletados
+      </Link>
+      <Link href="/creditos" style={estilos.link}>
+        Créditos e licenças
       </Link>
       <Botao titulo="Sair" variante="secundario" aoPressionar={confirmarSaida} />
       <Botao titulo="Excluir minha conta" variante="perigo" aoPressionar={confirmarExclusao} dica="Apaga sua conta e seus dados" />

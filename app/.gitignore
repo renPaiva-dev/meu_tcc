@@ -43,3 +43,6 @@ yarn-error.*
 # modelo de ML (copiado de ../ml/modelo com npm run copiar-modelo)
 assets/modelo/*.onnx
 assets/modelo/labels.json
+
+# registro local do modelo gerado por npm run copiar-modelo (o stub modeloRegistrado.ts é versionado)
+src/classificacao/modeloRegistrado.local.ts

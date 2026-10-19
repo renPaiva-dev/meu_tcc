@@ -2,6 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const CHAVES = {
+  /** Só para migrar versões antigas: o token agora fica no SecureStore (token.ts). */
   token: 'reciclathe:token',
   usuario: 'reciclathe:usuario',
   materiais: 'reciclathe:cache:materiais',

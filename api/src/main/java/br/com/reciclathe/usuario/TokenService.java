@@ -14,6 +14,9 @@ import br.com.reciclathe.config.ReciclatheProperties;
 @Service
 public class TokenService {
 
+    /** Emissor gravado no token e conferido pelo JwtDecoder (SecurityConfig). */
+    public static final String EMISSOR = "reciclathe";
+
     private final JwtEncoder encoder;
     private final ReciclatheProperties props;
 
@@ -26,7 +29,7 @@ public class TokenService {
     public String gerar(Usuario usuario) {
         Instant agora = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("reciclathe")
+                .issuer(EMISSOR)
                 .subject(usuario.getId().toString())
                 .issuedAt(agora)
                 .expiresAt(agora.plus(props.jwt().validade()))

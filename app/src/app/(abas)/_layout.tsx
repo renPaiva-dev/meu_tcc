@@ -1,22 +1,21 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Redirect, Tabs } from 'expo-router';
+import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 
 import { cores } from '../../componentes/tema';
-import { useSessao } from '../../contexto/SessaoContexto';
 
 type NomeIcone = keyof typeof MaterialCommunityIcons.glyphMap;
 
 function icone(nome: NomeIcone) {
-  return ({ color, size }: { color: ColorValue; size: number }) => (
+  const Icone = ({ color, size }: { color: ColorValue; size: number }) => (
     <MaterialCommunityIcons name={nome} color={color} size={size} />
   );
+  Icone.displayName = `Icone(${nome})`;
+  return Icone;
 }
 
+/** O acesso às abas é protegido no layout raiz (Stack.Protected). */
 export default function LayoutAbas() {
-  const { carregando, autenticado } = useSessao();
-  if (!carregando && !autenticado) return <Redirect href="/entrar" />;
-
   return (
     <Tabs
       screenOptions={{

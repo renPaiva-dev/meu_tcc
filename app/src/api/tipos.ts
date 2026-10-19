@@ -36,6 +36,16 @@ export const DESCRICAO_TIPO_PONTO: Record<TipoPonto, string> = {
   OUTRO: 'Outro',
 };
 
+/**
+ * Pontos importados do OpenStreetMap têm a `fonte` começando por "OpenStreetMap" (gerada pela
+ * importação da API); eles exigem a atribuição "© colaboradores do OpenStreetMap" (ODbL).
+ */
+export function ehDoOpenStreetMap(ponto: { fonte: string | null }): boolean {
+  return /openstreetmap/i.test(ponto.fonte ?? '');
+}
+
+export const ATRIBUICAO_OSM = '© colaboradores do OpenStreetMap';
+
 export interface Usuario {
   id: number;
   nome: string;

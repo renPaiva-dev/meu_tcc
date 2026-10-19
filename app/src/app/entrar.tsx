@@ -9,7 +9,7 @@ import { cores, fonte } from '../componentes/tema';
 import { useSessao } from '../contexto/SessaoContexto';
 
 export default function Entrar() {
-  const { entrar } = useSessao();
+  const { entrar, sessaoExpirada } = useSessao();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
@@ -36,6 +36,12 @@ export default function Entrar() {
     <Tela>
       <Titulo>ReciclaTHE</Titulo>
       <Paragrafo>Descubra como descartar seus resíduos corretamente em Teresina.</Paragrafo>
+      {sessaoExpirada && !erro ? (
+        <Aviso tipo="alerta">
+          Sua sessão expirou, entre novamente. Os envios pendentes ficam guardados e serão enviados quando você
+          entrar com a mesma conta.
+        </Aviso>
+      ) : null}
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
       <CampoTexto
         rotulo="E-mail"

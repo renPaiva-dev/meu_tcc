@@ -44,7 +44,7 @@ public class AuthController {
     public record CadastroRequest(
             @NotBlank @Size(max = 120) String nome,
             @NotBlank @Email @Size(max = 160) String email,
-            @NotBlank @Size(min = 6, max = 72) String senha,
+            @NotBlank @Size(min = UsuarioService.SENHA_MINIMA, max = 72) String senha,
             String zona) {
     }
 

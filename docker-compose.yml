@@ -4,11 +4,42 @@ services:
     environment:
       POSTGRES_DB: reciclathe
       POSTGRES_USER: reciclathe
-      POSTGRES_PASSWORD: reciclathe
+      POSTGRES_PASSWORD: ${DB_SENHA:-reciclathe}
     ports:
       - "5432:5432"
     volumes:
       - dados-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reciclathe -d reciclathe"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # API + painel. Para desenvolvimento basta "docker compose up -d db" e rodar a API pelo Maven.
+  # Os segredos vêm do ambiente ou de um arquivo .env ao lado deste (NÃO versione o .env):
+  #   JWT_SEGREDO=<ao menos 32 caracteres aleatórios>   ADMIN_SENHA=<senha do primeiro admin>
+  # Sem JWT_SEGREDO a API não sobe (a validação das propriedades recusa o segredo vazio).
+  api:
+    build: ./api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/reciclathe
+      DB_USUARIO: reciclathe
+      DB_SENHA: ${DB_SENHA:-reciclathe}
+      JWT_SEGREDO: ${JWT_SEGREDO:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@reciclathe.local}
+      ADMIN_SENHA: ${ADMIN_SENHA:-}
+      FOTOS_DIR: /dados/fotos
+      # true quando houver um proxy HTTPS na frente (cookie de sessão só por HTTPS)
+      COOKIE_SEGURO: ${COOKIE_SEGURO:-false}
+    ports:
+      - "8080:8080"
+    volumes:
+      - fotos:/dados/fotos
+    restart: unless-stopped
 
 volumes:
   dados-db:
+  fotos:

@@ -6,7 +6,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-/** Login do painel web. Qualquer usuário autentica, mas só o perfil ADMIN acessa /admin. */
+/**
+ * Login do painel web. Qualquer usuário autentica, mas só o perfil ADMIN acessa /admin.
+ * Conta bloqueada é recusada pelo próprio Spring Security (DisabledException).
+ */
 @Service
 public class UsuarioDetailsService implements UserDetailsService {
 
@@ -23,6 +26,7 @@ public class UsuarioDetailsService implements UserDetailsService {
         return User.withUsername(usuario.getEmail())
                 .password(usuario.getSenhaHash())
                 .roles(usuario.getPerfil().name())
+                .disabled(!usuario.isAtivo())
                 .build();
     }
 }

@@ -50,6 +50,8 @@ export function DadosProvider({ children }: { children: ReactNode }) {
   const [pendentes, setPendentes] = useState(0);
   const emAndamento = useRef(false);
   const repetir = useRef(false);
+  /** Versão mais recente de `sincronizar`, para a repetição agendada no fim de uma sincronização. */
+  const sincronizarRef = useRef<() => Promise<void>>(async () => undefined);
 
   const atualizarPendentes = useCallback(async () => {
     setPendentes(await contarPendentes());
@@ -93,8 +95,9 @@ export function DadosProvider({ children }: { children: ReactNode }) {
     }
     if (repetir.current) void sincronizarRef.current();
   }, [autenticado, recarregarUsuario, atualizarPendentes]);
-  const sincronizarRef = useRef(sincronizar);
-  sincronizarRef.current = sincronizar;
+  useEffect(() => {
+    sincronizarRef.current = sincronizar;
+  }, [sincronizar]);
 
   // 1) Carrega o cache local imediatamente (modo offline).
   useEffect(() => {
@@ -110,6 +113,8 @@ export function DadosProvider({ children }: { children: ReactNode }) {
 
   // 2) Sincroniza ao abrir o app e quando a sessão muda (login envia a fila).
   useEffect(() => {
+    // Efeito que inicia uma tarefa assíncrona (rede); o estado muda depois, não no corpo do efeito.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void sincronizar();
   }, [sincronizar]);
 

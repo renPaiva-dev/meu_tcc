@@ -1,0 +1,3 @@
+# O mvnw roda em Linux/macOS/containers: precisa de LF mesmo com core.autocrlf=true
+/mvnw text eol=lf
+*.cmd text eol=crlf

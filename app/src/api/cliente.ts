@@ -3,6 +3,7 @@
  *
  * - Erros HTTP viram ErroApi (lê application/problem+json: status, detail, campos).
  * - Falhas de rede / tempo esgotado viram ErroRede (o app trata como "offline").
+ * - Resposta 2xx que não é JSON (ex.: página de login de Wi-Fi público) também vira ErroRede.
  */
 import type {
   ArquivoLocal,
@@ -43,10 +44,6 @@ export class ErroRede extends Error {
   }
 }
 
-export function ehErroRede(e: unknown): e is ErroRede {
-  return e instanceof ErroRede;
-}
-
 /** Mensagem amigável para exibir ao usuário a partir de qualquer erro. */
 export function mensagemDeErro(e: unknown): string {
   if (e instanceof ErroApi) {
@@ -66,8 +63,10 @@ const MENSAGENS_PADRAO: Record<number, string> = {
   401: 'Sessão expirada ou credenciais inválidas.',
   403: 'Acesso negado.',
   404: 'Não encontrado.',
+  409: 'Já existe um registro com esses dados.',
   413: 'Arquivo muito grande.',
   422: 'Operação não permitida.',
+  429: 'Muitas tentativas. Aguarde um minuto e tente de novo.',
   500: 'Erro no servidor.',
 };
 
@@ -144,8 +143,19 @@ export class ClienteApi {
       throw erro;
     }
     if (resposta.status === 204) return undefined as T;
-    const texto = await resposta.text();
-    return (texto ? JSON.parse(texto) : undefined) as T;
+    let texto: string;
+    try {
+      texto = await resposta.text();
+    } catch {
+      throw new ErroRede();
+    }
+    if (!texto) return undefined as T;
+    try {
+      return JSON.parse(texto) as T;
+    } catch {
+      // Portal cativo/proxy devolvendo HTML com 200: não chegamos de fato à API.
+      throw new ErroRede('Resposta inesperada do servidor. Verifique sua conexão.');
+    }
   }
 
   private async lerProblema(resposta: Response): Promise<ErroApi> {
@@ -222,6 +232,11 @@ export class ClienteApi {
     });
     if (filtro.material) params.set('material', filtro.material);
     return this.requisitar(`/api/v1/pontos?${params.toString()}`);
+  }
+
+  /** Um ponto aprovado (usado quando ele ainda não está no cache). */
+  ponto(id: number | string): Promise<PontoColeta> {
+    return this.requisitar(`/api/v1/pontos/${encodeURIComponent(String(id))}`);
   }
 
   ranking(zona?: string | null): Promise<ItemRanking[]> {

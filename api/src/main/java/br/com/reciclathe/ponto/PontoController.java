@@ -47,8 +47,9 @@ public class PontoController {
         if (lat == null || lon == null) {
             return service.listarAprovados().stream().map(p -> PontoResponse.de(p, null)).toList();
         }
-        double raio = Math.min(raioKm, 50) * 1000;
-        return service.buscarProximos(lat, lon, raio, material, Math.min(limite, 200)).stream()
+        // Valores fora da faixa são ajustados em vez de recusados (raio até 50 km, de 1 a 200 pontos)
+        double raio = Math.min(Math.max(raioKm, 0), 50) * 1000;
+        return service.buscarProximos(lat, lon, raio, material, Math.max(1, Math.min(limite, 200))).stream()
                 .map(pp -> PontoResponse.de(pp.ponto(), pp.distanciaMetros()))
                 .toList();
     }

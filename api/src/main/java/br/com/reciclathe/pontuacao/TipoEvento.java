@@ -7,7 +7,7 @@ package br.com.reciclathe.pontuacao;
 public enum TipoEvento {
     /** Ponto de coleta sugerido pelo usuário e aprovado por um administrador. */
     SUGESTAO_APROVADA(20),
-    /** Presença confirmada por GPS em um ponto de coleta (1 por ponto por dia). */
+    /** Presença confirmada por GPS em um ponto de coleta (1 por ponto por dia, com teto diário). */
     CHECKIN(5),
     /** Feedback sobre uma classificação, certa ou errada (limite diário). */
     FEEDBACK(2);

@@ -50,6 +50,8 @@
                     <span class="badge" th:text="${p.status}"
                           th:classappend="${p.status.name() == 'APROVADO'} ? text-bg-success : (${p.status.name() == 'PENDENTE'} ? text-bg-warning : text-bg-secondary)"></span>
                     <div class="small text-muted" th:if="${p.motivoRecusa}" th:text="${p.motivoRecusa}"></div>
+                    <div class="small text-muted" th:if="${p.revisadoEm}"
+                         th:text="'por ' + (${p.revisadoPor?.nome} ?: 'administrador removido') + ' em ' + ${#temporals.format(p.revisadoEm, 'dd/MM/yyyy', 'America/Fortaleza')}"></div>
                 </td>
                 <td class="text-end">
                     <div th:if="${p.status.name() == 'PENDENTE'}" class="d-flex flex-column gap-1">
@@ -57,7 +59,7 @@
                             <button class="btn btn-sm btn-success w-100">Aprovar</button>
                         </form>
                         <form th:action="@{/admin/pontos/{id}/recusar(id=${p.id})}" method="post" class="d-flex gap-1">
-                            <input name="motivo" class="form-control form-control-sm" placeholder="Motivo" required>
+                            <input name="motivo" class="form-control form-control-sm" placeholder="Motivo" required maxlength="255">
                             <button class="btn btn-sm btn-outline-danger">Recusar</button>
                         </form>
                     </div>
@@ -66,6 +68,7 @@
             </tbody>
         </table>
     </div>
+    <nav th:replace="~{fragmentos :: paginacao(${pontos}, ${urlPaginacao})}"></nav>
 </main>
 <th:block th:replace="~{fragmentos :: scripts}"></th:block>
 </body>

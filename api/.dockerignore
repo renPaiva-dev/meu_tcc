@@ -1,0 +1,7 @@
+target/
+dados/
+.idea/
+.vscode/
+*.iml
+.git
+.gitattributes

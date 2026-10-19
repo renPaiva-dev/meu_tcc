@@ -15,7 +15,7 @@ npm run copiar-modelo -- /outra/pasta
 npx expo start --clear           # o Metro precisa reempacotar o asset
 ```
 
-O script também reescreve `src/classificacao/modeloRegistrado.ts` com os `require(...)`
+O script também gera `src/classificacao/modeloRegistrado.local.ts` (ignorado pelo git) com os `require(...)`
 dos arquivos (o Metro não permite `require` condicional de arquivo inexistente).
 `npm run remover-modelo` desfaz isso.
 

@@ -4,7 +4,10 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
 import type { ArquivoLocal, DadosFeedback } from '../api/tipos';
 
-/** Reduz a foto (lado maior até 1280 px, JPEG 80%) para ficar bem abaixo do limite de 5 MB da API. */
+/**
+ * Reduz a foto (lado maior até 1280 px, JPEG 80%) para ficar bem abaixo do limite de 5 MB da API.
+ * O arquivo gerado fica no cache do app; apague-o com `apagarArquivo` depois do envio.
+ */
 export async function prepararFotoParaEnvio(uri: string, nome = 'foto.jpg'): Promise<ArquivoLocal> {
   const original = await ImageManipulator.manipulate(uri).renderAsync();
   const maior = Math.max(original.width, original.height);
@@ -30,6 +33,17 @@ export async function persistirFotoDoFeedback(dados: DadosFeedback): Promise<Dad
     return { ...dados, foto: { ...dados.foto, uri: destino.uri } };
   } catch {
     return { ...dados, foto: null };
+  }
+}
+
+/** Apaga um arquivo local (melhor esforço; ignora se já não existe). */
+export function apagarArquivo(uri: string | null | undefined): void {
+  if (!uri) return;
+  try {
+    const arquivo = new File(uri);
+    if (arquivo.exists) arquivo.delete();
+  } catch {
+    // limpeza é "melhor esforço"
   }
 }
 

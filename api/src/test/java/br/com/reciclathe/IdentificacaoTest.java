@@ -8,15 +8,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
 import com.jayway.jsonpath.JsonPath;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
+import br.com.reciclathe.config.ReciclatheProperties;
 import br.com.reciclathe.pontuacao.PontuacaoService;
 
 class IdentificacaoTest extends IntegracaoTest {
+
+    @Autowired
+    ReciclatheProperties props;
 
     private Long identificar(String token, String material) throws Exception {
         String resposta = mvc.perform(post("/api/v1/identificacoes").header("Authorization", token)
@@ -41,7 +50,7 @@ class IdentificacaoTest extends IntegracaoTest {
     @Test
     void feedbackSoGuardaFotoComConsentimento() throws Exception {
         String token = cadastrar("Bia", "LESTE");
-        MockMultipartFile foto = new MockMultipartFile("foto", "item.jpg", "image/jpeg", new byte[]{9, 9});
+        MockMultipartFile foto = new MockMultipartFile("foto", "item.jpg", "image/jpeg", JPEG);
 
         Long semConsentimento = identificar(token, "PLASTICO");
         mvc.perform(multipart("/api/v1/identificacoes/" + semConsentimento + "/feedback").file(foto)
@@ -103,7 +112,8 @@ class IdentificacaoTest extends IntegracaoTest {
         assertThat(jdbc.sql("SELECT usuario_id FROM identificacao WHERE id = ?").param(id)
                 .query(Long.class).optional()).isEmpty();
         assertThat(jdbc.sql("SELECT count(*) FROM identificacao").query(Long.class).single()).isEqualTo(1);
-        mvc.perform(get("/api/v1/me").header("Authorization", token)).andExpect(status().isNotFound());
+        // O token da conta excluída deixa de valer na hora
+        mvc.perform(get("/api/v1/me").header("Authorization", token)).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -122,5 +132,57 @@ class IdentificacaoTest extends IntegracaoTest {
         mvc.perform(get("/api/v1/ranking").param("zona", "NORTE"))
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].posicao").value(1));
+    }
+
+    @Test
+    void rankingIgnoraAdministradorEZonaInexistenteDa404() throws Exception {
+        String token = cadastrar("Igor Cidadão", "SUL");
+        Long id = identificar(token, "PAPEL");
+        mvc.perform(multipart("/api/v1/identificacoes/" + id + "/feedback")
+                .param("correto", "true").header("Authorization", token));
+        // Pontos dados ao administrador diretamente no banco não podem aparecer no ranking
+        jdbc.sql("""
+                        INSERT INTO evento_pontuacao (usuario_id, tipo, pontos, referencia_id, dia)
+                        SELECT id, 'CHECKIN', 500, NULL, CURRENT_DATE FROM usuario WHERE email = ?
+                        """).param(ADMIN).update();
+
+        mvc.perform(get("/api/v1/ranking"))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].nome").value("Igor C."));
+        mvc.perform(get("/api/v1/ranking").param("zona", "OESTE")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void exclusaoDeContaApagaAsFotosDoDisco() throws Exception {
+        String token = cadastrar("Jade", "LESTE");
+        MockMultipartFile foto = new MockMultipartFile("foto", "item.jpg", "image/jpeg", JPEG);
+
+        Long identificacao = identificar(token, "PLASTICO");
+        mvc.perform(multipart("/api/v1/identificacoes/" + identificacao + "/feedback").file(foto)
+                        .param("correto", "true").param("consentimentoFoto", "true")
+                        .header("Authorization", token))
+                .andExpect(status().isOk());
+        String resposta = mvc.perform(multipart("/api/v1/pontos/sugestoes").file(foto)
+                        .param("nome", "PEV da Jade").param("tipo", "PEV").param("endereco", "Rua")
+                        .param("latitude", "-5.0892").param("longitude", "-42.8016").param("materiais", "VIDRO")
+                        .header("Authorization", token))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long ponto = ((Number) JsonPath.read(resposta, "$.id")).longValue();
+
+        Path diretorio = props.fotos().diretorio().toAbsolutePath().normalize();
+        List<Path> arquivos = List.of(
+                diretorio.resolve(jdbc.sql("SELECT foto_arquivo FROM identificacao WHERE id = ?")
+                        .param(identificacao).query(String.class).single()),
+                diretorio.resolve(jdbc.sql("SELECT foto_arquivo FROM ponto_coleta WHERE id = ?")
+                        .param(ponto).query(String.class).single()));
+        assertThat(arquivos).allMatch(Files::exists);
+
+        mvc.perform(delete("/api/v1/me").header("Authorization", token)).andExpect(status().isNoContent());
+
+        assertThat(arquivos).noneMatch(Files::exists);
+        // O ponto sugerido continua (pendente de revisão), mas sem autor e sem foto
+        assertThat(jdbc.sql("SELECT sugerido_por IS NULL AND foto_arquivo IS NULL FROM ponto_coleta WHERE id = ?")
+                .param(ponto).query(Boolean.class).single()).isTrue();
     }
 }

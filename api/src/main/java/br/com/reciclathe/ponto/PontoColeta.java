@@ -17,6 +17,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -26,6 +27,9 @@ import br.com.reciclathe.usuario.Usuario;
 /**
  * Local onde o cidadão pode entregar resíduos. A coluna geográfica "localizacao" existe só no
  * banco (gerada a partir de latitude/longitude) e é usada nas buscas por proximidade.
+ *
+ * <p>As associações são LAZY: cada consulta do repositório diz o que precisa carregar (@EntityGraph),
+ * já que as respostas são montadas fora da transação (spring.jpa.open-in-view=false).
  */
 @Entity
 public class PontoColeta {
@@ -63,16 +67,24 @@ public class PontoColeta {
 
     private String fotoArquivo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sugerido_por")
     private Usuario sugeridoPor;
+
+    /** Administrador que aprovou ou recusou o ponto pela última vez (auditoria). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "revisado_por")
+    private Usuario revisadoPor;
+
+    private Instant revisadoEm;
 
     /** Elemento de origem no OpenStreetMap ("node", "way" ou "relation"), se foi importado de lá. */
     private String osmTipo;
 
     private Long osmId;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @BatchSize(size = 100)
     @JoinTable(name = "ponto_material",
             joinColumns = @JoinColumn(name = "ponto_id"),
             inverseJoinColumns = @JoinColumn(name = "material_codigo"))
@@ -105,14 +117,21 @@ public class PontoColeta {
         this.materiais.addAll(materiais);
     }
 
-    public void aprovar() {
+    public void aprovar(Usuario revisor) {
         this.status = StatusPonto.APROVADO;
         this.motivoRecusa = null;
+        registrarRevisao(revisor);
     }
 
-    public void recusar(String motivo) {
+    public void recusar(String motivo, Usuario revisor) {
         this.status = StatusPonto.RECUSADO;
         this.motivoRecusa = motivo;
+        registrarRevisao(revisor);
+    }
+
+    private void registrarRevisao(Usuario revisor) {
+        this.revisadoPor = revisor;
+        this.revisadoEm = Instant.now();
     }
 
     public Long getId() {
@@ -173,6 +192,14 @@ public class PontoColeta {
 
     public void setSugeridoPor(Usuario sugeridoPor) {
         this.sugeridoPor = sugeridoPor;
+    }
+
+    public Usuario getRevisadoPor() {
+        return revisadoPor;
+    }
+
+    public Instant getRevisadoEm() {
+        return revisadoEm;
     }
 
     public void setOrigemOsm(String osmTipo, Long osmId) {

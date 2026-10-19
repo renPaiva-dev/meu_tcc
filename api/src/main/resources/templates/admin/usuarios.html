@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Usuários')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: menu('usuarios')}"></nav>
+<main class="container pb-5">
+    <h1 class="h3 mb-1">Usuários</h1>
+    <p class="text-muted">Contas bloqueadas não entram no app nem no painel, e os tokens já emitidos deixam de valer.</p>
+    <div th:replace="~{fragmentos :: alertas}"></div>
+    <div th:if="${erros}" class="alert alert-danger">
+        <ul class="mb-0"><li th:each="e : ${erros}" th:text="${e}"></li></ul>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Zona</th><th>Cadastro</th><th>Situação</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="u : ${usuarios}">
+                <td th:text="${u.nome}"></td>
+                <td class="small" th:text="${u.email}"></td>
+                <td><span class="badge" th:classappend="${u.perfil.name() == 'ADMIN'} ? text-bg-dark : text-bg-light" th:text="${u.perfil}"></span></td>
+                <td class="small" th:text="${u.zona?.nome} ?: '—'"></td>
+                <td class="small" th:text="${#temporals.format(u.criadoEm, 'dd/MM/yyyy', 'America/Fortaleza')}"></td>
+                <td><span class="badge" th:classappend="${u.ativo} ? text-bg-success : text-bg-danger"
+                          th:text="${u.ativo} ? 'ativo' : 'bloqueado'"></span></td>
+                <td class="text-end">
+                    <span th:if="${u.email == emailLogado}" class="small text-muted">você</span>
+                    <form th:if="${u.email != emailLogado and u.ativo}" th:action="@{/admin/usuarios/{id}/bloquear(id=${u.id})}"
+                          method="post" onsubmit="return confirm('Bloquear esta conta?')">
+                        <button class="btn btn-sm btn-outline-danger">Bloquear</button>
+                    </form>
+                    <form th:if="${u.email != emailLogado and !u.ativo}" th:action="@{/admin/usuarios/{id}/desbloquear(id=${u.id})}" method="post">
+                        <button class="btn btn-sm btn-outline-success">Desbloquear</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav th:replace="~{fragmentos :: paginacao(${usuarios}, '/admin/usuarios')}"></nav>
+
+    <div class="card mt-4" style="max-width: 640px">
+        <div class="card-header">Novo administrador</div>
+        <form th:action="@{/admin/usuarios}" method="post" class="card-body row g-2">
+            <div class="col-md-6">
+                <label class="form-label" for="nome">Nome</label>
+                <input class="form-control" id="nome" name="nome" th:value="${novoAdmin.nome()}" required maxlength="120">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="email">E-mail</label>
+                <input class="form-control" type="email" id="email" name="email" th:value="${novoAdmin.email()}" required maxlength="160">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="senha">Senha inicial</label>
+                <input class="form-control" type="password" id="senha" name="senha" required th:minlength="${senhaMinima}" maxlength="72">
+                <div class="form-text" th:text="|Mínimo de ${senhaMinima} caracteres. Peça para trocar no primeiro acesso.|"></div>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button class="btn btn-success w-100" type="submit">Criar administrador</button>
+            </div>
+        </form>
+    </div>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

@@ -94,9 +94,9 @@ class ImportacaoOsmTest extends IntegracaoTest {
         when(overpass.consultar(anyString())).thenReturn(RESPOSTA);
         importacao.importar();
         Long conteiner = pontos.findByOsmTipoAndOsmId("node", 8259815076L).orElseThrow().getId();
-        pontoService.aprovar(conteiner);
+        pontoService.aprovar(conteiner, ADMIN);
         Long transbordo = pontos.findByOsmTipoAndOsmId("way", 888422583L).orElseThrow().getId();
-        pontoService.recusar(transbordo, "Não recebe resíduos do cidadão");
+        pontoService.recusar(transbordo, "Não recebe resíduos do cidadão", ADMIN);
 
         ImportacaoOsmService.Resultado r = importacao.importar();
 
@@ -112,7 +112,7 @@ class ImportacaoOsmTest extends IntegracaoTest {
         importacao.importar();
         Long sucata = pontos.findByOsmTipoAndOsmId("node", 12264317369L).orElseThrow().getId();
 
-        assertThatThrownBy(() -> pontoService.aprovar(sucata))
+        assertThatThrownBy(() -> pontoService.aprovar(sucata, ADMIN))
                 .isInstanceOf(RegraNegocioException.class)
                 .hasMessageContaining("materiais");
     }
@@ -124,5 +124,18 @@ class ImportacaoOsmTest extends IntegracaoTest {
         mvc.perform(post("/admin/pontos/importar-osm").with(user("admin@teste.local").roles("ADMIN")).with(csrf()))
                 .andExpect(redirectedUrl("/admin/pontos?status=PENDENTE"))
                 .andExpect(flash().attribute("erro", org.hamcrest.Matchers.containsString("OpenStreetMap")));
+    }
+
+    @Test
+    void pontoExcluidoPeloAdminNaoVoltaNaReimportacao() {
+        when(overpass.consultar(anyString())).thenReturn(RESPOSTA);
+        importacao.importar();
+        Long conteiner = pontos.findByOsmTipoAndOsmId("node", 8259815076L).orElseThrow().getId();
+        pontoService.excluir(conteiner);
+
+        ImportacaoOsmService.Resultado r = importacao.importar();
+
+        assertThat(r).isEqualTo(new ImportacaoOsmService.Resultado(0, 2, 1, 1));
+        assertThat(pontos.findByOsmTipoAndOsmId("node", 8259815076L)).isEmpty();
     }
 }

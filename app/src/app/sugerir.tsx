@@ -15,7 +15,7 @@ import { espaco } from '../componentes/tema';
 import { useDados } from '../contexto/DadosContexto';
 import { dentroDeTeresina, type Coordenadas } from '../utilitarios/geo';
 import { obterLocalizacaoAtual, pedirPermissaoLocalizacao } from '../utilitarios/localizacao';
-import { prepararFotoParaEnvio } from '../utilitarios/fotos';
+import { apagarArquivo, prepararFotoParaEnvio } from '../utilitarios/fotos';
 
 type Campo = 'nome' | 'tipo' | 'endereco' | 'latitude' | 'longitude' | 'horario' | 'telefone' | 'fonte' | 'materiais';
 
@@ -87,8 +87,8 @@ export default function Sugerir() {
       return;
     }
     setEnviando(true);
+    let arquivo: ArquivoLocal | null = null;
     try {
-      let arquivo: ArquivoLocal | null = null;
       if (foto) arquivo = await prepararFotoParaEnvio(foto, 'ponto.jpg');
       await api.sugerirPonto({
         nome: nome.trim(),
@@ -111,6 +111,8 @@ export default function Sugerir() {
         setErroGeral(mensagemDeErro(err));
       }
     } finally {
+      // A cópia reduzida da foto só serve para o envio.
+      apagarArquivo(arquivo?.uri);
       setEnviando(false);
     }
   }

@@ -1,10 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Linking, Platform, StyleSheet, Text, View } from 'react-native';
 
 import { ErroApi, mensagemDeErro } from '../../api/cliente';
 import { api } from '../../api/instancia';
-import { DESCRICAO_TIPO_PONTO } from '../../api/tipos';
+import { ATRIBUICAO_OSM, DESCRICAO_TIPO_PONTO, ehDoOpenStreetMap, type PontoColeta } from '../../api/tipos';
 import { Aviso, Cartao, Info, Paragrafo, Tela, Titulo } from '../../componentes/basicos';
 import { Botao } from '../../componentes/Botao';
 import { cores, espaco, fonte } from '../../componentes/tema';
@@ -32,14 +32,45 @@ export default function DetalhePonto() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { pontos, materiais } = useDados();
   const { recarregarUsuario } = useSessao();
-  const ponto = pontos.find((p) => String(p.id) === id);
+  const doCache = pontos.find((p) => String(p.id) === id);
+  // Ponto fora do cache (ex.: link aberto antes da sincronização): busca na API.
+  const [remoto, setRemoto] = useState<{ id: string; ponto: PontoColeta | null; erro: string | null } | null>(null);
   const [fazendoCheckin, setFazendoCheckin] = useState(false);
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro' | 'info'; texto: string } | null>(null);
 
+  useEffect(() => {
+    if (doCache || !id) return;
+    let ativo = true;
+    api
+      .ponto(id)
+      .then((p) => ativo && setRemoto({ id, ponto: p, erro: null }))
+      .catch((e) => {
+        if (!ativo) return;
+        const naoExiste = e instanceof ErroApi && e.status === 404;
+        setRemoto({
+          id,
+          ponto: null,
+          erro: naoExiste ? 'Ponto não encontrado (pode ter sido removido).' : mensagemDeErro(e),
+        });
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [doCache, id]);
+
+  const ponto = doCache ?? (remoto?.id === id ? remoto.ponto : null);
+
   if (!ponto) {
+    if (remoto?.id !== id) {
+      return (
+        <Tela>
+          <ActivityIndicator size="large" color={cores.primaria} accessibilityLabel="Carregando o ponto" />
+        </Tela>
+      );
+    }
     return (
       <Tela>
-        <Aviso tipo="erro">Ponto não encontrado. Sincronize os dados e tente novamente.</Aviso>
+        <Aviso tipo="erro">{remoto.erro ?? 'Ponto não encontrado.'} Sincronize os dados e tente novamente.</Aviso>
       </Tela>
     );
   }
@@ -73,6 +104,7 @@ export default function DetalhePonto() {
         <Info rotulo="Horário" valor={ponto.horario ?? 'Não informado'} />
         <Info rotulo="Telefone" valor={ponto.telefone} />
         <Info rotulo="Fonte da informação" valor={ponto.fonte} />
+        {ehDoOpenStreetMap(ponto) ? <Text style={estilos.atribuicao}>Dados {ATRIBUICAO_OSM} (licença ODbL)</Text> : null}
       </Cartao>
 
       <Cartao>
@@ -140,4 +172,5 @@ const estilos = StyleSheet.create({
   material: { flexDirection: 'row', alignItems: 'center', gap: espaco.xs, paddingVertical: espaco.xs },
   bolinha: { width: 14, height: 14, borderRadius: 7 },
   materialTexto: { fontSize: fonte.normal, color: cores.texto },
+  atribuicao: { fontSize: fonte.pequena, color: cores.textoSecundario },
 });

@@ -1,11 +1,11 @@
-import Checkbox from 'expo-checkbox';
+import { Checkbox } from 'expo-checkbox';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { mensagemDeErro } from '../api/cliente';
 import { api } from '../api/instancia';
-import type { DadosFeedback } from '../api/tipos';
+import { CODIGOS_MATERIAL, type DadosFeedback } from '../api/tipos';
 import { enviarFeedback, registrarIdentificacao, type RefIdentificacao } from '../armazenamento/fila';
 import { Aviso, Cartao, Info, Paragrafo, Subtitulo, Tela } from '../componentes/basicos';
 import { Botao } from '../componentes/Botao';
@@ -15,7 +15,7 @@ import { LIMIAR_CONFIANCA } from '../config';
 import { useDados } from '../contexto/DadosContexto';
 import { obterIdentificacaoAtual } from '../contexto/identificacaoAtual';
 import { useSessao } from '../contexto/SessaoContexto';
-import { persistirFotoDoFeedback, prepararFotoParaEnvio } from '../utilitarios/fotos';
+import { apagarArquivo, persistirFotoDoFeedback, prepararFotoParaEnvio } from '../utilitarios/fotos';
 import { corTextoSobre, encontrarMaterial } from '../utilitarios/materiais';
 
 function porcentagem(p: number): string {
@@ -25,6 +25,8 @@ function porcentagem(p: number): string {
 type EstadoRegistro =
   | { fase: 'enviando' }
   | { fase: 'ok'; ref: RefIdentificacao; enfileirado: boolean }
+  /** Classificador de desenvolvimento (aleatório): nada é registrado na API. */
+  | { fase: 'somenteLocal' }
   | { fase: 'erro'; mensagem: string };
 
 export default function Resultado() {
@@ -36,12 +38,14 @@ export default function Resultado() {
   const confiancaBaixa = !!resultado && resultado.melhor.probabilidade < LIMIAR_CONFIANCA;
   // Com confiança baixa, o usuário escolhe entre as 3 mais prováveis antes de ver a orientação.
   const [escolhido, setEscolhido] = useState<string | null>(confiancaBaixa ? null : (resultado?.melhor.classe ?? null));
-  const [registro, setRegistro] = useState<EstadoRegistro>({ fase: 'enviando' });
+  const simulado = resultado?.origem === 'desenvolvimento';
+  const [registro, setRegistro] = useState<EstadoRegistro>(simulado ? { fase: 'somenteLocal' } : { fase: 'enviando' });
   const registrou = useRef(false);
 
-  // Registra a previsão do modelo (top-1) uma única vez; offline vai para a fila.
+  // Registra a previsão do modelo (top-1) uma única vez; sem conexão ou com falha do servidor,
+  // vai para a fila. Resultados aleatórios do modo desenvolvimento não são enviados à API.
   useEffect(() => {
-    if (!resultado || registrou.current) return;
+    if (!resultado || simulado || registrou.current) return;
     registrou.current = true;
     void (async () => {
       try {
@@ -57,7 +61,7 @@ export default function Resultado() {
         setRegistro({ fase: 'erro', mensagem: mensagemDeErro(e) });
       }
     })();
-  }, [resultado, usuario?.zona, atualizarPendentes]);
+  }, [resultado, simulado, usuario?.zona, atualizarPendentes]);
 
   if (!atual || !resultado) {
     return (
@@ -157,21 +161,29 @@ export default function Resultado() {
             <Aviso tipo="info">Defina sua zona na aba Perfil para ver o telefone do Disk Coleta da sua região.</Aviso>
           ) : null}
 
-          <Feedback
-            refIdentificacao={registro.fase === 'ok' ? registro.ref : null}
-            classePrevista={resultado.melhor.classe}
-            escolhaInicial={escolhido}
-            uriFoto={atual.uri}
-            aoConcluir={async () => {
-              await atualizarPendentes();
-              await recarregarUsuario();
-            }}
-          />
+          {registro.fase === 'somenteLocal' ? (
+            <Aviso tipo="alerta">
+              Modo desenvolvimento: esta identificação é aleatória e não foi registrada nem pode receber resposta.
+            </Aviso>
+          ) : registro.fase === 'erro' ? null : (
+            <Feedback
+              refIdentificacao={registro.fase === 'ok' ? registro.ref : null}
+              classePrevista={resultado.melhor.classe}
+              escolhaInicial={escolhido}
+              uriFoto={atual.uri}
+              aoConcluir={async () => {
+                await atualizarPendentes();
+                await recarregarUsuario();
+              }}
+            />
+          )}
         </>
       ) : null}
 
       {registro.fase === 'ok' && registro.enfileirado ? (
-        <Aviso tipo="info">Sem conexão: a identificação será registrada quando a internet voltar.</Aviso>
+        <Aviso tipo="info">
+          Não foi possível falar com o servidor agora: a identificação será registrada quando a conexão voltar.
+        </Aviso>
       ) : null}
       {registro.fase === 'erro' ? (
         <Aviso tipo="erro">Não foi possível registrar a identificação: {registro.mensagem}</Aviso>
@@ -205,25 +217,31 @@ function Feedback({ refIdentificacao, classePrevista, escolhaInicial, uriFoto, a
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'info' | 'erro'; texto: string } | null>(null);
   const [concluido, setConcluido] = useState(false);
   const nomePrevisto = encontrarMaterial(materiais, classePrevista).nome;
+  const opcoesCorrecao = (materiais.length ? materiais.map((m) => m.codigo) : [...CODIGOS_MATERIAL]).filter(
+    (c) => c !== classePrevista,
+  );
 
   async function enviar() {
     if (correto == null || !refIdentificacao) return;
-    if (!correto && !materialCorreto) {
+    if (!correto && (!materialCorreto || materialCorreto === classePrevista)) {
       setMensagem({ tipo: 'erro', texto: 'Escolha o material correto.' });
       return;
     }
     setEnviando(true);
     setMensagem(null);
+    let fotoReduzida: string | null = null;
     try {
+      const foto = consentimento ? await prepararFotoParaEnvio(uriFoto, 'identificacao.jpg') : null;
+      fotoReduzida = foto?.uri ?? null;
       const dados: DadosFeedback = {
         correto,
         materialCorreto: correto ? null : materialCorreto,
         consentimentoFoto: consentimento,
-        foto: consentimento ? await prepararFotoParaEnvio(uriFoto, 'identificacao.jpg') : null,
+        foto,
       };
       const r = await enviarFeedback(api, refIdentificacao, dados, persistirFotoDoFeedback);
       if (r.enfileirado) {
-        setMensagem({ tipo: 'info', texto: 'Sem conexão: sua resposta será enviada quando a internet voltar.' });
+        setMensagem({ tipo: 'info', texto: 'Sem conexão com o servidor: sua resposta será enviada quando ela voltar.' });
       } else if (r.pontosGanhos > 0) {
         setMensagem({ tipo: 'sucesso', texto: `Obrigado! Você ganhou ${r.pontosGanhos} pontos.` });
       } else {
@@ -237,6 +255,8 @@ function Feedback({ refIdentificacao, classePrevista, escolhaInicial, uriFoto, a
     } catch (e) {
       setMensagem({ tipo: 'erro', texto: mensagemDeErro(e) });
     } finally {
+      // A cópia reduzida fica no cache; se o feedback foi para a fila, a fila tem a própria cópia.
+      apagarArquivo(fotoReduzida);
       setEnviando(false);
     }
   }
@@ -267,10 +287,12 @@ function Feedback({ refIdentificacao, classePrevista, escolhaInicial, uriFoto, a
       {correto === false ? (
         <>
           <Paragrafo>Qual é o material correto?</Paragrafo>
+          {/* O material previsto não aparece: "Não" + o mesmo material seria contraditório. */}
           <SeletorMaterial
             materiais={materiais}
             valor={materialCorreto}
             aoMudar={setMaterialCorreto}
+            opcoes={opcoesCorrecao}
           />
         </>
       ) : null}

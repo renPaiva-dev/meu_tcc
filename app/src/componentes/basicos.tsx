@@ -199,7 +199,7 @@ export const estilos = StyleSheet.create({
   entradaErro: { borderColor: cores.perigo, borderWidth: 2 },
   erroCampo: { color: cores.perigo, fontSize: fonte.pequena },
   chip: {
-    minHeight: 40,
+    minHeight: ALVO_TOQUE,
     flexDirection: 'row',
     alignItems: 'center',
     gap: espaco.xs,

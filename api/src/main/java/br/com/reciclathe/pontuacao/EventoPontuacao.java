@@ -1,6 +1,7 @@
 package br.com.reciclathe.pontuacao;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,14 +41,19 @@ public class EventoPontuacao {
     @CreationTimestamp
     private Instant criadoEm;
 
+    /** Dia do evento no fuso de Teresina: base das regras diárias e da restrição única do check-in. */
+    @Column(nullable = false)
+    private LocalDate dia;
+
     protected EventoPontuacao() {
     }
 
-    public EventoPontuacao(Usuario usuario, TipoEvento tipo, Long referenciaId) {
+    public EventoPontuacao(Usuario usuario, TipoEvento tipo, Long referenciaId, LocalDate dia) {
         this.usuario = usuario;
         this.tipo = tipo;
         this.pontos = tipo.getPontos();
         this.referenciaId = referenciaId;
+        this.dia = dia;
     }
 
     public Long getId() {
@@ -68,5 +74,9 @@ public class EventoPontuacao {
 
     public Instant getCriadoEm() {
         return criadoEm;
+    }
+
+    public LocalDate getDia() {
+        return dia;
     }
 }

@@ -24,6 +24,12 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(TestcontainersConfig.class)
 public abstract class IntegracaoTest {
 
+    /** Administrador criado na inicialização pelo application-test.yml. */
+    protected static final String ADMIN = "admin@teste.local";
+
+    /** Início de um JPEG de verdade: o upload confere a assinatura do arquivo, não o Content-Type. */
+    protected static final byte[] JPEG = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0x10, 'J', 'F', 'I', 'F', 0};
+
     @Autowired
     protected MockMvc mvc;
 
@@ -35,8 +41,9 @@ public abstract class IntegracaoTest {
         jdbc.sql("DELETE FROM evento_pontuacao").update();
         jdbc.sql("DELETE FROM identificacao").update();
         jdbc.sql("DELETE FROM ponto_coleta").update();
+        jdbc.sql("DELETE FROM osm_ignorado").update();
         jdbc.sql("DELETE FROM bairro").update();
-        jdbc.sql("DELETE FROM usuario WHERE perfil = 'CIDADAO'").update();
+        jdbc.sql("DELETE FROM usuario WHERE email <> ?").param(ADMIN).update();
     }
 
     /** Cadastra um cidadão novo e devolve o cabeçalho Authorization pronto. */

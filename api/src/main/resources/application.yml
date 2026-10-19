@@ -11,8 +11,37 @@ spring:
       ddl-auto: validate
   servlet:
     multipart:
-      max-file-size: 5MB
-      max-request-size: 6MB
+      # Cabe a importação de bairros (GeoJSON); o limite das fotos é aplicado em ArmazenamentoFotos
+      max-file-size: 20MB
+      max-request-size: 21MB
+
+server:
+  # Atrás de um proxy HTTPS (nginx, Traefik...), usa X-Forwarded-* para IP, esquema e host
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        # Ligue (COOKIE_SEGURO=true) quando o painel for servido por HTTPS
+        secure: ${COOKIE_SEGURO:false}
+        http-only: true
+        same-site: lax
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  # Documenta só a API do app; o painel não entra
+  paths-to-match: /api/**
+  api-docs:
+    enabled: ${DOCS_API:true}
+  swagger-ui:
+    enabled: ${DOCS_API:true}
 
 reciclathe:
   fuso-horario: America/Fortaleza
@@ -22,10 +51,18 @@ reciclathe:
     validade: 30d
   fotos:
     diretorio: ${FOTOS_DIR:./dados/fotos}
+    tamanho-maximo: 5MB
   admin:
     nome: Administrador
     email: ${ADMIN_EMAIL:admin@reciclathe.local}
     senha: ${ADMIN_SENHA:}
+  limites:
+    # Check-ins pontuados por usuário por dia (além do limite de 1 por ponto por dia)
+    checkins-por-dia: 5
+    # Sugestões PENDENTES simultâneas por usuário
+    sugestoes-pendentes: 10
+    # Tentativas de login/cadastro por IP por minuto (API e painel)
+    tentativas-por-minuto: ${LIMITE_TENTATIVAS:10}
   osm:
     overpass-urls:
       - https://overpass-api.de/api/interpreter

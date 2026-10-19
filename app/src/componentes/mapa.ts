@@ -6,7 +6,7 @@
  */
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 
-export const MAPA_DISPONIVEL = Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
+const MAPA_DISPONIVEL = Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
 
 type ModuloMapa = typeof import('./MapaBase');
 
@@ -20,6 +20,8 @@ export function carregarMapa(): ModuloMapa | null {
     return modulo;
   }
   try {
+    // require síncrono de propósito: o módulo nativo só pode ser carregado fora do Expo Go.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     modulo = require('./MapaBase') as ModuloMapa;
   } catch (e) {
     console.warn('[mapa] MapLibre indisponível', e);

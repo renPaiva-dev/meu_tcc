@@ -1,6 +1,4 @@
 import {
-  base64ParaBytes,
-  recorteCentralQuadrado,
   rgbaParaNCHW,
   softmax,
   topK,
@@ -76,24 +74,6 @@ describe('topK', () => {
 
   it('exige mesma quantidade de probabilidades e classes', () => {
     expect(() => topK([0.5, 0.5], CLASSES)).toThrow();
-  });
-});
-
-describe('recorteCentralQuadrado', () => {
-  it('recorta o centro de uma foto em paisagem', () => {
-    expect(recorteCentralQuadrado(4000, 3000)).toEqual({ originX: 500, originY: 0, width: 3000, height: 3000 });
-  });
-  it('recorta o centro de uma foto em retrato', () => {
-    expect(recorteCentralQuadrado(3000, 4000)).toEqual({ originX: 0, originY: 500, width: 3000, height: 3000 });
-  });
-});
-
-describe('base64ParaBytes', () => {
-  it('decodifica com e sem padding', () => {
-    expect(Array.from(base64ParaBytes('TWFu'))).toEqual([77, 97, 110]);
-    expect(Array.from(base64ParaBytes('TWE='))).toEqual([77, 97]);
-    expect(Array.from(base64ParaBytes('TQ=='))).toEqual([77]);
-    expect(Array.from(base64ParaBytes('data:image/jpeg;base64,/9j/'))).toEqual([0xff, 0xd8, 0xff]);
   });
 });
 

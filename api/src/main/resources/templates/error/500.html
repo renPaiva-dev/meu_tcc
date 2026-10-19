@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Algo deu errado')}"></head>
+<body class="d-flex align-items-center min-vh-100">
+<!-- Erro inesperado no servidor (o detalhe fica só no log) -->
+<main class="container" style="max-width: 520px">
+    <h1 class="h3 mb-1 text-success">Recicla<strong>THE</strong></h1>
+    <div class="card card-body shadow-sm mt-3">
+        <p class="display-6 mb-1 text-danger">500</p>
+        <h2 class="h5">Algo deu errado</h2>
+        <p class="text-muted mb-3">Ocorreu um erro inesperado. Tente de novo em instantes; se persistir, verifique o log da aplicação.</p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-success" th:href="@{/admin}">Voltar ao painel</a>
+            <a class="btn btn-outline-secondary" href="javascript:history.back()">Página anterior</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

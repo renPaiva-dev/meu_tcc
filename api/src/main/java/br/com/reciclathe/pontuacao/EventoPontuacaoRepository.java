@@ -1,6 +1,6 @@
 package br.com.reciclathe.pontuacao;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Limit;
@@ -13,17 +13,22 @@ public interface EventoPontuacaoRepository extends JpaRepository<EventoPontuacao
     @Query("SELECT COALESCE(SUM(e.pontos), 0) FROM EventoPontuacao e WHERE e.usuario.id = :usuarioId")
     long somarPontos(@Param("usuarioId") Long usuarioId);
 
-    long countByUsuarioIdAndTipoAndCriadoEmGreaterThanEqual(Long usuarioId, TipoEvento tipo, Instant desde);
+    long countByUsuarioIdAndTipoAndDia(Long usuarioId, TipoEvento tipo, LocalDate dia);
 
-    boolean existsByUsuarioIdAndTipoAndReferenciaIdAndCriadoEmGreaterThanEqual(
-            Long usuarioId, TipoEvento tipo, Long referenciaId, Instant desde);
+    boolean existsByUsuarioIdAndTipoAndReferenciaIdAndDia(Long usuarioId, TipoEvento tipo, Long referenciaId,
+                                                          LocalDate dia);
+
+    boolean existsByTipoAndReferenciaId(TipoEvento tipo, Long referenciaId);
 
     List<EventoPontuacao> findByUsuarioIdOrderByCriadoEmDesc(Long usuarioId, Limit limite);
 
+    /** Só cidadãos ativos concorrem: administradores e contas bloqueadas ficam de fora. */
     @Query("""
             SELECT new br.com.reciclathe.pontuacao.PosicaoRanking(u.id, u.nome, SUM(e.pontos))
             FROM EventoPontuacao e JOIN e.usuario u LEFT JOIN u.zona z
-            WHERE (:zona IS NULL OR z.codigo = :zona)
+            WHERE u.perfil = br.com.reciclathe.usuario.Perfil.CIDADAO
+              AND u.ativo = true
+              AND (:zona IS NULL OR z.codigo = :zona)
             GROUP BY u.id, u.nome
             ORDER BY SUM(e.pontos) DESC, u.id ASC
             """)

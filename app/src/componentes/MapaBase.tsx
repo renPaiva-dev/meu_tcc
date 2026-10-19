@@ -45,7 +45,7 @@ interface Props {
 
 export function MapaBase({ children, cameraRef, centro = CENTRO_TERESINA, zoom = 12, aoPressionar, rotuloAcessivel }: Props) {
   return (
-    <View style={estilos.container} accessibilityLabel={rotuloAcessivel}>
+    <View style={estilos.container} accessible accessibilityRole="image" accessibilityLabel={rotuloAcessivel}>
       <Map
         style={estilos.mapa}
         mapStyle={ESTILO_OSM}

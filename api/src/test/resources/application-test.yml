@@ -6,3 +6,6 @@ reciclathe:
   admin:
     email: admin@teste.local
     senha: admin-teste
+  limites:
+    # Todos os testes vêm do mesmo IP; o limite é testado num contexto próprio (LimiteTentativasTest)
+    tentativas-por-minuto: 100000

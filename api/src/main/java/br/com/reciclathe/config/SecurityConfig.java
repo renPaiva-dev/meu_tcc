@@ -1,12 +1,14 @@
 package br.com.reciclathe.config;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -16,12 +18,20 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import br.com.reciclathe.usuario.TokenService;
+import br.com.reciclathe.usuario.UsuarioRepository;
 
 /**
  * Duas cadeias de segurança: a API do app (stateless, token JWT) e o painel web
@@ -29,6 +39,9 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 public class SecurityConfig {
+
+    /** Antes da cadeia do Spring Security (ordem -100), que é quem trata o POST /login do painel. */
+    private static final int ORDEM_LIMITE_TENTATIVAS = -110;
 
     @Bean
     @Order(1)
@@ -50,12 +63,22 @@ public class SecurityConfig {
     @Order(2)
     SecurityFilterChain painelFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/error").permitAll()
+                        .requestMatchers("/login", "/css/**", "/error", "/actuator/health", "/actuator/health/**",
+                                "/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
+                        .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/admin", true).permitAll())
                 .logout(logout -> logout.logoutSuccessUrl("/login?saiu").permitAll());
         return http.build();
+    }
+
+    @Bean
+    FilterRegistrationBean<LimiteTentativasFilter> limiteTentativas(ReciclatheProperties props) {
+        var registro = new FilterRegistrationBean<>(
+                new LimiteTentativasFilter(props.limites().tentativasPorMinuto(), Clock.systemUTC()));
+        registro.setOrder(ORDEM_LIMITE_TENTATIVAS);
+        return registro;
     }
 
     @Bean
@@ -68,9 +91,29 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(new ImmutableSecret<>(chave(props)));
     }
 
+    /**
+     * Além da assinatura e da validade, confere o emissor e se a conta ainda existe e está ativa:
+     * conta bloqueada ou excluída perde o acesso na hora, sem esperar o token expirar.
+     */
     @Bean
-    JwtDecoder jwtDecoder(ReciclatheProperties props) {
-        return NimbusJwtDecoder.withSecretKey(chave(props)).macAlgorithm(MacAlgorithm.HS256).build();
+    JwtDecoder jwtDecoder(ReciclatheProperties props, UsuarioRepository usuarios) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(chave(props)).macAlgorithm(MacAlgorithm.HS256).build();
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefaultWithIssuer(TokenService.EMISSOR),
+                jwt -> contaAtiva(jwt, usuarios)));
+        return decoder;
+    }
+
+    private static OAuth2TokenValidatorResult contaAtiva(Jwt jwt, UsuarioRepository usuarios) {
+        try {
+            if (usuarios.existsByIdAndAtivoTrue(Long.valueOf(jwt.getSubject()))) {
+                return OAuth2TokenValidatorResult.success();
+            }
+        } catch (NumberFormatException e) {
+            // subject inválido: cai na recusa abaixo
+        }
+        return OAuth2TokenValidatorResult.failure(
+                new OAuth2Error("invalid_token", "Conta inexistente ou bloqueada", null));
     }
 
     private static SecretKey chave(ReciclatheProperties props) {

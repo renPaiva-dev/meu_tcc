@@ -1,10 +1,12 @@
 package br.com.reciclathe.admin;
 
+import java.security.Principal;
 import java.util.List;
 
 import jakarta.validation.Valid;
 
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -33,6 +35,8 @@ import br.com.reciclathe.ponto.TipoPonto;
 @RequestMapping("/admin/pontos")
 public class PontoAdminController {
 
+    static final int POR_PAGINA = 50;
+
     private final PontoService pontos;
     private final MaterialService materiais;
     private final ArmazenamentoFotos fotos;
@@ -47,10 +51,12 @@ public class PontoAdminController {
     }
 
     @GetMapping
-    public String listar(@RequestParam(required = false) StatusPonto status, Model model) {
-        model.addAttribute("pontos", pontos.listar(status));
+    public String listar(@RequestParam(required = false) StatusPonto status,
+                         @RequestParam(defaultValue = "0") int pagina, Model model) {
+        model.addAttribute("pontos", pontos.listar(status, PageRequest.of(Math.max(pagina, 0), POR_PAGINA)));
         model.addAttribute("status", status);
         model.addAttribute("pendentes", pontos.contar(StatusPonto.PENDENTE));
+        model.addAttribute("urlPaginacao", status == null ? "/admin/pontos" : "/admin/pontos?status=" + status);
         return "admin/pontos";
     }
 
@@ -81,9 +87,9 @@ public class PontoAdminController {
     }
 
     @PostMapping("/{id}/aprovar")
-    public String aprovar(@PathVariable Long id, RedirectAttributes redirect) {
+    public String aprovar(@PathVariable Long id, Principal admin, RedirectAttributes redirect) {
         try {
-            pontos.aprovar(id);
+            pontos.aprovar(id, admin.getName());
             redirect.addFlashAttribute("mensagem", "Ponto aprovado e publicado no mapa.");
         } catch (RegraNegocioException e) {
             redirect.addFlashAttribute("erro", e.getMessage());
@@ -96,7 +102,7 @@ public class PontoAdminController {
         try {
             ImportacaoOsmService.Resultado r = importacaoOsm.importar();
             redirect.addFlashAttribute("mensagem", ("OpenStreetMap: %d novos pontos, %d pendentes atualizados, "
-                    + "%d já revisados (mantidos como estão), %d fora de Teresina ignorados. "
+                    + "%d já revisados ou excluídos (mantidos como estão), %d fora de Teresina ignorados. "
                     + "Os novos ficam pendentes: revise e informe os materiais antes de aprovar.")
                     .formatted(r.novos(), r.atualizados(), r.jaRevisados(), r.foraDaArea()));
         } catch (ImportacaoOsmService.FalhaImportacaoException e) {
@@ -106,10 +112,11 @@ public class PontoAdminController {
     }
 
     @PostMapping("/{id}/recusar")
-    public String recusar(@PathVariable Long id, @RequestParam String motivo, RedirectAttributes redirect) {
+    public String recusar(@PathVariable Long id, @RequestParam(defaultValue = "") String motivo, Principal admin,
+                          RedirectAttributes redirect) {
         try {
-            pontos.recusar(id, motivo);
-            redirect.addFlashAttribute("mensagem", "Sugestão recusada.");
+            pontos.recusar(id, motivo, admin.getName());
+            redirect.addFlashAttribute("mensagem", "Ponto recusado.");
         } catch (RegraNegocioException e) {
             redirect.addFlashAttribute("erro", e.getMessage());
         }
@@ -136,6 +143,7 @@ public class PontoAdminController {
         model.addAttribute("dados", dados);
         model.addAttribute("tipos", TipoPonto.values());
         model.addAttribute("todosMateriais", materiais.listar());
+        model.addAttribute("motivoMaximo", PontoService.MOTIVO_MAXIMO);
         return "admin/ponto-form";
     }
 }

@@ -9,6 +9,45 @@
         <ul class="mb-0"><li th:each="e : ${erros}" th:text="${e}"></li></ul>
     </div>
 
+    <!-- Situação e revisão: quem sugeriu, motivo da recusa, quem revisou, aprovar/recusar -->
+    <div class="card card-body mb-3" th:if="${ponto != null}">
+        <div class="d-flex flex-wrap justify-content-between gap-3">
+            <div>
+                <span class="badge mb-2" th:text="${ponto.status}"
+                      th:classappend="${ponto.status.name() == 'APROVADO'} ? text-bg-success : (${ponto.status.name() == 'PENDENTE'} ? text-bg-warning : text-bg-secondary)"></span>
+                <div class="small" th:if="${ponto.sugeridoPor}">
+                    Sugerido por <strong th:text="${ponto.sugeridoPor.nome}"></strong>
+                    (<span th:text="${ponto.sugeridoPor.email}"></span>)
+                    em <span th:text="${#temporals.format(ponto.criadoEm, 'dd/MM/yyyy HH:mm', 'America/Fortaleza')}"></span>
+                </div>
+                <div class="small" th:if="${ponto.sugeridoPor == null and ponto.osmId != null}">
+                    Importado do <a th:href="@{'https://www.openstreetmap.org/' + ${ponto.osmTipo} + '/' + ${ponto.osmId}}"
+                                    target="_blank" rel="noopener">OpenStreetMap</a>
+                </div>
+                <div class="small text-danger" th:if="${ponto.motivoRecusa}">
+                    Motivo da recusa: <span th:text="${ponto.motivoRecusa}"></span>
+                </div>
+                <div class="small text-muted" th:if="${ponto.revisadoEm}">
+                    Revisado por <span th:text="${ponto.revisadoPor?.nome} ?: 'administrador removido'"></span>
+                    em <span th:text="${#temporals.format(ponto.revisadoEm, 'dd/MM/yyyy HH:mm', 'America/Fortaleza')}"></span>
+                </div>
+            </div>
+            <div class="d-flex flex-column gap-2" style="min-width: 280px">
+                <form th:if="${ponto.status.name() != 'APROVADO'}" th:action="@{/admin/pontos/{id}/aprovar(id=${ponto.id})}" method="post">
+                    <button class="btn btn-sm btn-success w-100">Aprovar e publicar</button>
+                </form>
+                <form th:if="${ponto.status.name() != 'RECUSADO'}" th:action="@{/admin/pontos/{id}/recusar(id=${ponto.id})}"
+                      method="post" class="d-flex gap-1">
+                    <input name="motivo" class="form-control form-control-sm" placeholder="Motivo da recusa" required
+                           th:maxlength="${motivoMaximo}">
+                    <button class="btn btn-sm btn-outline-danger">Recusar</button>
+                </form>
+            </div>
+        </div>
+        <p class="small text-muted mb-0 mt-2" th:if="${ponto.status.name() != 'APROVADO'}">
+            Para aprovar, os materiais aceitos precisam estar salvos no formulário abaixo.</p>
+    </div>
+
     <form th:action="${ponto == null} ? @{/admin/pontos} : @{/admin/pontos/{id}(id=${ponto.id})}" method="post"
           class="card card-body">
         <div class="row g-3">

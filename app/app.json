@@ -7,11 +7,18 @@
     "icon": "./assets/icon.png",
     "scheme": "reciclathe",
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "br.com.reciclathe.app"
+      "supportsTablet": false,
+      "bundleIdentifier": "br.com.reciclathe.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "package": "br.com.reciclathe.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E8F5E9",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -49,7 +56,17 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#E8F5E9"
+        }
+      ]
     ]
   }
 }
